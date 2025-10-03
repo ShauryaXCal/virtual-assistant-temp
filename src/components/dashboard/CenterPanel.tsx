@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Search, Loader2, Sparkles, ArrowRight } from 'lucide-react';
 import { CHAT_SUGGESTIONS, generateAIResponse } from '../../data/mockData';
+import Markdown from 'react-markdown'
 
 interface SearchResult {
   id: string;
@@ -8,8 +9,13 @@ interface SearchResult {
   answer: string;
   timestamp: string;
 }
+interface CenterPanelProps {
+  patientId: string | null;
+  appointment: { id: string; time: string; reason: string } | null;
+}
 
-export function CenterPanel() {
+export function CenterPanel({patientId, appointment}:CenterPanelProps) {
+  console.log(patientId, appointment);
   const [searchHistory, setSearchHistory] = useState<SearchResult[]>([]);
   const [currentQuery, setCurrentQuery] = useState('');
   const [currentAnswer, setCurrentAnswer] = useState('');
@@ -86,10 +92,10 @@ export function CenterPanel() {
             </div>
 
             <h1 className="text-4xl font-bold text-center text-gray-900 dark:text-white mb-4">
-              Where knowledge begins
+              How can I help?
             </h1>
             <p className="text-center text-gray-600 dark:text-gray-400 mb-8 text-lg">
-              Ask anything about clinical guidelines, diagnoses, treatments, and drug interactions
+              Ask about guidelines, diagnoses, treatments, and drug safety for your patients.
             </p>
 
             <div className="relative mb-8">
@@ -184,7 +190,7 @@ export function CenterPanel() {
                     <div className="flex-1">
                       <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">Answer</h3>
                       <div className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap leading-relaxed">
-                        {currentAnswer}
+                        <Markdown>{currentAnswer}</Markdown>
                       </div>
                     </div>
                   </div>
