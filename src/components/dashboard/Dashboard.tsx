@@ -50,7 +50,7 @@ export function Dashboard() {
         )}
 
         <div className="flex-1 bg-gray-50 dark:bg-gray-950 transition-colors duration-300">
-          <CenterPanel />
+          <CenterPanel patientId={selectedPatientId} appointment={selectedAppointment}/>
         </div>
 
         {showRightPanel && (

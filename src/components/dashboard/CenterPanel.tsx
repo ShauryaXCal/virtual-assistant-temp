@@ -1,6 +1,92 @@
-import { useState } from 'react';
-import { Search, Loader2, Sparkles, ArrowRight } from 'lucide-react';
-import { CHAT_SUGGESTIONS, generateAIResponse } from '../../data/mockData';
+import { useState, useEffect } from 'react';
+import { Search, Loader2, Sparkles, ArrowRight, ChevronDown, ChevronUp } from 'lucide-react';
+import { CHAT_SUGGESTIONS, generateAIResponse} from '../../data/mockData';
+import Markdown from 'react-markdown'
+
+
+
+import {
+  getPatientById,
+  getMedicalEncountersByPatientId,
+  getConditionsByPatientId,
+  getMedicationsByPatientId,
+  getLabReportsByPatientId,
+} from '../../lib/database';
+
+// import { useAuth } from '../../contexts/AuthContext';
+
+import type { Patient, MedicalEncounter, Condition, Medication, LabReport } from '../../lib/supabase';
+
+function shuffleArray<T>(array: T[]): T[] {
+  const arr = [...array];
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function generatePatientQuestions(
+  encounters: MedicalEncounter[],
+  medications: Medication[],
+  conditions: Condition[],
+  labs: LabReport[]
+): string[] {
+  const questions: string[] = [];
+
+  // --- Medications ---
+  medications.forEach(med => {
+    questions.push(`Why was ${med.name} prescribed?`);
+    questions.push(`When was ${med.name} started?`);
+    if (med.status === "discontinued") {
+      questions.push(`When was ${med.name} discontinued?`);
+    }
+  });
+
+  // --- Conditions ---
+  conditions.forEach(cond => {
+    questions.push(`What is the history of ${cond.name}?`);
+    questions.push(`When was ${cond.name} diagnosed?`);
+    questions.push(`Is ${cond.name} active or resolved?`);
+    // Check if any medication notes mention this condition
+    const relatedMeds = medications
+      .filter(m => m.notes.toLowerCase().includes(cond.name.toLowerCase()))
+      .map(m => m.name);
+    if (relatedMeds.length) {
+      questions.push(
+        `Which medications are being used to manage ${cond.name}? (e.g., ${relatedMeds.join(
+          ", "
+        )})`
+      );
+    }
+  });
+
+  // --- Encounters ---
+  encounters.forEach(enc => {
+    questions.push(`What was the diagnosis in the encounter on ${enc.encounter_date}?`);
+    questions.push(
+      `What treatments or referrals were done in the encounter on ${enc.encounter_date}?`
+    );
+    questions.push(`Show me encounters for reason: ${enc.reason}`);
+  });
+
+  // --- Labs ---
+  labs.forEach(lab => {
+    questions.push(`What were the results of ${lab.test_name} on ${lab.test_date}?`);
+    if (lab.status !== "normal") {
+      questions.push(`Why was ${lab.test_name} abnormal?`);
+    }
+  });
+
+  // --- Patient Summary ---
+  questions.push(`What is the patient’s cardiac history?`);
+  questions.push(`What chronic conditions does the patient have?`);
+  questions.push(`What medications is the patient currently taking?`);
+
+  return questions;
+}
+
+
 
 interface SearchResult {
   id: string;
@@ -8,13 +94,63 @@ interface SearchResult {
   answer: string;
   timestamp: string;
 }
+interface CenterPanelProps {
+  patientId: string | null;
+  appointment: { id: string; time: string; reason: string } | null;
+}
 
-export function CenterPanel() {
+export function CenterPanel({patientId}:CenterPanelProps) {
+
+  // const { user } = useAuth();
+
   const [searchHistory, setSearchHistory] = useState<SearchResult[]>([]);
   const [currentQuery, setCurrentQuery] = useState('');
   const [currentAnswer, setCurrentAnswer] = useState('');
   const [isSearching, setIsSearching] = useState(false);
   const [input, setInput] = useState('');
+
+
+  // const [patient, setPatient] = useState<Patient | null>(null);
+  // const [encounters, setEncounters] = useState<MedicalEncounter[]>([]);
+  // const [conditions, setConditions] = useState<Condition[]>([]);
+  // const [medications, setMedications] = useState<Medication[]>([]);
+  // const [labs, setLabs] = useState<LabReport[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [chatSuggestions, setChatSuggestions] = useState<string[]>(CHAT_SUGGESTIONS);
+  const [showAllSuggestions, setShowAllSuggestions] = useState(false);
+  
+  useEffect(() => {
+    async function loadPatientData() {
+      if (!patientId) {
+        setIsLoading(false);
+        return;
+      }
+
+      setIsLoading(true);
+      const [patientData, encountersData, conditionsData, medicationsData, labsData] = await Promise.all([
+        getPatientById(patientId),
+        getMedicalEncountersByPatientId(patientId),
+        getConditionsByPatientId(patientId),
+        getMedicationsByPatientId(patientId),
+        getLabReportsByPatientId(patientId),
+      ]);
+
+
+      setChatSuggestions(shuffleArray(generatePatientQuestions(encountersData, medicationsData, conditionsData, labsData)));
+      
+      // setPatient(patientData);
+      // setEncounters(encountersData);
+      // setConditions(conditionsData);
+      // setMedications(medicationsData);
+      // setLabs(labsData);
+      // setIsLoading(false);
+    }
+
+    loadPatientData();
+  }, [patientId]);
+
+
+
 
   const handleSearch = async (queryText?: string) => {
     const query = queryText || input;
@@ -86,10 +222,10 @@ export function CenterPanel() {
             </div>
 
             <h1 className="text-4xl font-bold text-center text-gray-900 dark:text-white mb-4">
-              Where knowledge begins
+              How can I help?
             </h1>
             <p className="text-center text-gray-600 dark:text-gray-400 mb-8 text-lg">
-              Ask anything about clinical guidelines, diagnoses, treatments, and drug interactions
+              Ask about guidelines, diagnoses, treatments, and drug safety for your patients.
             </p>
 
             <div className="relative mb-8">
@@ -109,8 +245,8 @@ export function CenterPanel() {
 
             <div className="mb-8">
               <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-3">Try asking:</p>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                {CHAT_SUGGESTIONS.map((suggestion, index) => (
+              <div className={showAllSuggestions ? "grid grid-cols-1 md:grid-cols-2 gap-2 max-h-80 overflow-y-auto" : "grid grid-cols-1 md:grid-cols-2 gap-2"}>
+                {(showAllSuggestions ? chatSuggestions : chatSuggestions.slice(0, 6)).map((suggestion, index) => (
                   <button
                     key={index}
                     onClick={() => handleSearch(suggestion)}
@@ -121,6 +257,21 @@ export function CenterPanel() {
                   </button>
                 ))}
               </div>
+              {chatSuggestions.length > 6 && (
+                <div className="flex justify-center mt-2">
+                  <button
+                    className="flex items-center justify-center w-8 h-8 rounded-full hover:bg-healthcare-100 dark:hover:bg-healthcare-900/20 transition-colors focus:outline-none"
+                    onClick={() => setShowAllSuggestions((prev) => !prev)}
+                    aria-label={showAllSuggestions ? 'Show less' : 'Show all'}
+                  >
+                    {showAllSuggestions ? (
+                      <ChevronUp className="w-6 h-6 text-healthcare-500" />
+                    ) : (
+                      <ChevronDown className="w-6 h-6 text-healthcare-500" />
+                    )}
+                  </button>
+                </div>
+              )}
             </div>
 
             {searchHistory.length > 0 && (
@@ -184,7 +335,7 @@ export function CenterPanel() {
                     <div className="flex-1">
                       <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">Answer</h3>
                       <div className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap leading-relaxed">
-                        {currentAnswer}
+                        <Markdown>{currentAnswer}</Markdown>
                       </div>
                     </div>
                   </div>
