@@ -98,9 +98,10 @@ interface SearchResult {
 interface CenterPanelProps {
   patientId: string | null;
   appointment: { id: string; time: string; reason: string } | null;
+  rightPanelOpen: boolean;
 }
 
-export function CenterPanel({patientId}:CenterPanelProps) {
+export function CenterPanel({patientId, rightPanelOpen}:CenterPanelProps) {
 
   const { user } = useAuth();
 
@@ -121,17 +122,20 @@ export function CenterPanel({patientId}:CenterPanelProps) {
   const [showAllSuggestions, setShowAllSuggestions] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const abortRef = useRef<AbortController | null>(null);
+  const [currentPatientName, setCurrentPatientName] = useState<string | null>(null);
 
   const systemMessage = useMemo(() => {
     const doctorName = user?.fullName || 'Unknown Doctor';
     const specialty = user?.specialty || 'General Medicine';
-    return `You are a clinical assistant. The current user is Dr. ${doctorName} (Specialty: ${specialty}). Provide concise, evidence-informed answers with clear formatting.`;
-  }, [user]);
+    const patientContext = rightPanelOpen && currentPatientName ? ` The current patient is ${currentPatientName}.` : '';
+    return `You are a clinical assistant. The current user is Dr. ${doctorName} (Specialty: ${specialty}).${patientContext} Provide  evidence-informed answers with clear formatting.`;
+  }, [user, rightPanelOpen, currentPatientName]);
   
   useEffect(() => {
     async function loadPatientData() {
       if (!patientId) {
         setIsLoading(false);
+        setCurrentPatientName(null);
         return;
       }
 
@@ -146,6 +150,7 @@ export function CenterPanel({patientId}:CenterPanelProps) {
 
 
       setChatSuggestions(shuffleArray(generatePatientQuestions(encountersData, medicationsData, conditionsData, labsData)));
+      setCurrentPatientName(patientData ? patientData.name : null);
       
       // setPatient(patientData);
       // setEncounters(encountersData);
