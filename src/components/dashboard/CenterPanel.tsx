@@ -240,7 +240,7 @@ export function CenterPanel({patientId, rightPanelOpen}:CenterPanelProps) {
   };
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full overflow-y-auto">
       {!currentQuery && !currentAnswer ? (
         <div className="flex-1 flex flex-col items-center justify-center p-8">
           <div className="w-full max-w-3xl">

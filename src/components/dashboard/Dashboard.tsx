@@ -4,17 +4,22 @@ import { LeftPanel } from './LeftPanel';
 import { CenterPanel } from './CenterPanel';
 import { RightPanel } from './RightPanel';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { Appointment } from '../../data/mockData';
+
+interface SelectedAppointment {
+  id: string;
+  time: string;
+  reason: string;
+}
 
 export function Dashboard() {
   const [showLeftPanel, setShowLeftPanel] = useState(true);
   const [showRightPanel, setShowRightPanel] = useState(true);
   const [selectedPatientId, setSelectedPatientId] = useState<string | null>(null);
-  const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
+  const [selectedAppointment, setSelectedAppointment] = useState<SelectedAppointment | null>(null);
 
-  const handleSelectAppointment = (patientId: string, appointment: Appointment) => {
+  const handleSelectAppointment = (patientId: string, appointment: { id: string; time: string; reason: string }) => {
     setSelectedPatientId(patientId);
-    setSelectedAppointment(appointment);
+    setSelectedAppointment({ id: appointment.id, time: appointment.time, reason: appointment.reason });
     if (window.innerWidth < 1024) {
       setShowRightPanel(true);
       setShowLeftPanel(false);
@@ -49,7 +54,7 @@ export function Dashboard() {
           </button>
         )}
 
-        <div className="flex-1 bg-gray-50 dark:bg-gray-950 transition-colors duration-300">
+        <div className="flex-1 bg-gray-50 dark:bg-gray-950 transition-colors duration-300 overflow-y-auto">
           <CenterPanel patientId={selectedPatientId} appointment={selectedAppointment} rightPanelOpen={showRightPanel}/>
         </div>
 
