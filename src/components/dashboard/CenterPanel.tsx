@@ -110,6 +110,7 @@ export function CenterPanel({patientId, rightPanelOpen}:CenterPanelProps) {
   const [currentAnswer, setCurrentAnswer] = useState('');
   const [isSearching, setIsSearching] = useState(false);
   const [input, setInput] = useState('');
+  const [conversation, setConversation] = useState<SearchResult[]>([]);
 
 
   // const [patient, setPatient] = useState<Patient | null>(null);
@@ -182,8 +183,13 @@ export function CenterPanel({patientId, rightPanelOpen}:CenterPanelProps) {
     abortRef.current = new AbortController();
 
     try {
+      const historyMessages = conversation.flatMap(item => ([
+        { role: 'user' as const, content: item.query },
+        { role: 'assistant' as const, content: item.answer }
+      ]));
       const answer = await callAgent([
         { role: 'system', content: systemMessage },
+        ...historyMessages,
         { role: 'user', content: query }
       ], { signal: abortRef.current.signal });
       const formatted = formatAnswer(answer);
@@ -195,6 +201,7 @@ export function CenterPanel({patientId, rightPanelOpen}:CenterPanelProps) {
         answer: formatted,
         timestamp: new Date().toISOString(),
       };
+      setConversation((prev) => [...prev, result]);
       setSearchHistory((prev) => [result, ...prev]);
     } catch (e: any) {
       if (e?.name !== 'AbortError') {
@@ -217,6 +224,7 @@ export function CenterPanel({patientId, rightPanelOpen}:CenterPanelProps) {
     setCurrentAnswer('');
     setInput('');
     setError(null);
+    setConversation([]);
   };
 
   const handleSelectHistoryItem = (item: SearchResult) => {
@@ -355,26 +363,34 @@ export function CenterPanel({patientId, rightPanelOpen}:CenterPanelProps) {
                 </div>
               </div>
             ) : (
-              <div className="prose prose-sm dark:prose-invert max-w-none">
-                <div className="p-6 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
-                  <div className="flex items-start space-x-3 mb-4">
-                    <div className="w-8 h-8 bg-healthcare-100 dark:bg-healthcare-900/30 rounded-lg flex items-center justify-center flex-shrink-0">
-                      <Sparkles className="w-5 h-5 text-healthcare-600 dark:text-healthcare-400" />
+              <div className="prose prose-sm dark:prose-invert max-w-none space-y-4">
+                {conversation.map((turn) => (
+                  <div key={turn.id} className="p-6 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
+                    <div className="mb-3">
+                      <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Question</h3>
+                      <div className="text-gray-800 dark:text-gray-200 whitespace-pre-wrap leading-relaxed">
+                        {turn.query}
+                      </div>
                     </div>
-                    <div className="flex-1">
-                      <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">Answer</h3>
-                      {error ? (
-                        <div className="text-red-600 dark:text-red-400 text-sm">{error}</div>
-                      ) : (
+                    <div className="flex items-start space-x-3">
+                      <div className="w-8 h-8 bg-healthcare-100 dark:bg-healthcare-900/30 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <Sparkles className="w-5 h-5 text-healthcare-600 dark:text-healthcare-400" />
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">Answer</h3>
                         <div className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap leading-relaxed">
-                          <Markdown>{currentAnswer}</Markdown>
+                          <Markdown>{turn.answer}</Markdown>
                         </div>
-                      )}
+                      </div>
                     </div>
                   </div>
-                </div>
+                ))}
 
-                <div className="mt-6 p-4 bg-healthcare-50 dark:bg-healthcare-900/10 rounded-lg border border-healthcare-200 dark:border-healthcare-800">
+                {error && (
+                  <div className="text-red-600 dark:text-red-400 text-sm">{error}</div>
+                )}
+
+                <div className="p-4 bg-healthcare-50 dark:bg-healthcare-900/10 rounded-lg border border-healthcare-200 dark:border-healthcare-800">
                   <p className="text-xs text-healthcare-700 dark:text-healthcare-400">
                     <strong>Note:</strong> This information is based on current clinical guidelines and medical literature.
                     Always verify with the latest evidence-based sources and consider individual patient factors when making clinical decisions.
