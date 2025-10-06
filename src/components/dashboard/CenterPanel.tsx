@@ -109,6 +109,7 @@ export function CenterPanel({patientId, rightPanelOpen}:CenterPanelProps) {
   const [currentQuery, setCurrentQuery] = useState('');
   const [currentAnswer, setCurrentAnswer] = useState('');
   const [isSearching, setIsSearching] = useState(false);
+  const [searchStep, setSearchStep] = useState(0);
   const [input, setInput] = useState('');
   const [conversation, setConversation] = useState<SearchResult[]>([]);
 
@@ -175,6 +176,7 @@ export function CenterPanel({patientId, rightPanelOpen}:CenterPanelProps) {
     setCurrentAnswer('');
     setInput('');
     setIsSearching(true);
+    setSearchStep(0);
 
     setError(null);
     if (abortRef.current) {
@@ -351,15 +353,96 @@ export function CenterPanel({patientId, rightPanelOpen}:CenterPanelProps) {
             </div>
 
             {isSearching ? (
-              <div className="space-y-4">
-                <div className="flex items-center space-x-3 text-healthcare-500">
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                  <span className="text-sm font-medium">Searching medical databases and guidelines...</span>
-                </div>
-                <div className="space-y-3">
-                  {[1, 2, 3].map((i) => (
-                    <div key={i} className="h-4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" style={{ width: `${Math.random() * 40 + 60}%` }} />
-                  ))}
+              <div className="space-y-6">
+                {searchStep >= 0 && (
+                  <div className="flex items-center space-x-3 px-4 py-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg border-l-4 border-healthcare-500">
+                    {searchStep === 0 ? (
+                      <Loader2 className="w-5 h-5 animate-spin text-healthcare-500 flex-shrink-0" />
+                    ) : (
+                      <div className="w-5 h-5 rounded-full bg-healthcare-500 flex items-center justify-center flex-shrink-0">
+                        <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                        </svg>
+                      </div>
+                    )}
+                    <span className="text-sm font-medium text-gray-900 dark:text-white">
+                      {searchStep === 0 ? 'Analyzing query' : 'Finished analyzing'}
+                    </span>
+                  </div>
+                )}
+
+                <div className="space-y-3 pl-4 border-l-2 border-gray-200 dark:border-gray-700">
+                  <div className={`flex items-start space-x-3 transition-opacity duration-300 ${searchStep >= 1 ? 'opacity-100' : 'opacity-40'}`}>
+                    <div className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 ${
+                      searchStep === 1
+                        ? 'bg-healthcare-100 dark:bg-healthcare-900/30'
+                        : searchStep > 1
+                        ? 'bg-healthcare-500'
+                        : 'bg-gray-200 dark:bg-gray-700'
+                    }`}>
+                      {searchStep === 1 ? (
+                        <Loader2 className="w-3.5 h-3.5 text-healthcare-600 dark:text-healthcare-400 animate-spin" />
+                      ) : searchStep > 1 ? (
+                        <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                        </svg>
+                      ) : (
+                        <Search className="w-3.5 h-3.5 text-gray-400" />
+                      )}
+                    </div>
+                    <div className="flex-1">
+                      <p className={`text-sm ${searchStep >= 1 ? 'font-medium text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-400'}`}>
+                        Searching patient medical history
+                      </p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Reviewing encounters, conditions, medications, and lab results</p>
+                    </div>
+                  </div>
+
+                  <div className={`flex items-start space-x-3 transition-opacity duration-300 ${searchStep >= 2 ? 'opacity-100' : 'opacity-40'}`}>
+                    <div className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 ${
+                      searchStep === 2
+                        ? 'bg-healthcare-100 dark:bg-healthcare-900/30'
+                        : searchStep > 2
+                        ? 'bg-healthcare-500'
+                        : 'bg-gray-200 dark:bg-gray-700'
+                    }`}>
+                      {searchStep === 2 ? (
+                        <Loader2 className="w-3.5 h-3.5 text-healthcare-600 dark:text-healthcare-400 animate-spin" />
+                      ) : searchStep > 2 ? (
+                        <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                        </svg>
+                      ) : (
+                        <Search className="w-3.5 h-3.5 text-gray-400" />
+                      )}
+                    </div>
+                    <div className="flex-1">
+                      <p className={`text-sm ${searchStep >= 2 ? 'font-medium text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-400'}`}>
+                        Searching clinical guidelines and protocols
+                      </p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Accessing published medical literature, FDA, CDC, and more</p>
+                    </div>
+                  </div>
+
+                  <div className={`flex items-start space-x-3 transition-opacity duration-300 ${searchStep >= 3 ? 'opacity-100' : 'opacity-40'}`}>
+                    <div className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 ${
+                      searchStep >= 3
+                        ? 'bg-healthcare-100 dark:bg-healthcare-900/30'
+                        : 'bg-gray-200 dark:bg-gray-700'
+                    }`}>
+                      {searchStep >= 3 ? (
+                        <Loader2 className="w-3.5 h-3.5 text-healthcare-600 dark:text-healthcare-400 animate-spin" />
+                      ) : (
+                        <Sparkles className="w-3.5 h-3.5 text-gray-400" />
+                      )}
+                    </div>
+                    <div className="flex-1">
+                      <p className={`text-sm ${searchStep >= 3 ? 'font-medium text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-400'}`}>
+                        Synthesizing relevant information
+                      </p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Combining patient data with clinical evidence</p>
+                    </div>
+                  </div>
                 </div>
               </div>
             ) : (
