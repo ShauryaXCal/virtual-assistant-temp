@@ -21,7 +21,7 @@ interface LeftPanelProps {
 
 export function LeftPanel({ onSelectAppointment }: LeftPanelProps) {
   const { user } = useAuth();
-  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+  const [selectedDate, setSelectedDate] = useState('2025-10-03');
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
