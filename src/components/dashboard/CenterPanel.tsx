@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useMemo, useRef, useState, useEffect } from 'react';
 import { Search, Loader2, Sparkles, ArrowRight, ChevronDown, ChevronUp } from 'lucide-react';
-import { CHAT_SUGGESTIONS, generateAIResponse} from '../../data/mockData';
+import { CHAT_SUGGESTIONS } from '../../data/mockData';
 import Markdown from 'react-markdown'
 
 
@@ -13,7 +13,8 @@ import {
   getLabReportsByPatientId,
 } from '../../lib/database';
 
-// import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '../../contexts/AuthContext';
+import { callAgent } from '../../lib/agentClient';
 
 import type { Patient, MedicalEncounter, Condition, Medication, LabReport } from '../../lib/supabase';
 
@@ -101,7 +102,7 @@ interface CenterPanelProps {
 
 export function CenterPanel({patientId}:CenterPanelProps) {
 
-  // const { user } = useAuth();
+  const { user } = useAuth();
 
   const [searchHistory, setSearchHistory] = useState<SearchResult[]>([]);
   const [currentQuery, setCurrentQuery] = useState('');
@@ -118,6 +119,14 @@ export function CenterPanel({patientId}:CenterPanelProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [chatSuggestions, setChatSuggestions] = useState<string[]>(CHAT_SUGGESTIONS);
   const [showAllSuggestions, setShowAllSuggestions] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const abortRef = useRef<AbortController | null>(null);
+
+  const systemMessage = useMemo(() => {
+    const doctorName = user?.fullName || 'Unknown Doctor';
+    const specialty = user?.specialty || 'General Medicine';
+    return `You are a clinical assistant. The current user is Dr. ${doctorName} (Specialty: ${specialty}). Provide concise, evidence-informed answers with clear formatting.`;
+  }, [user]);
   
   useEffect(() => {
     async function loadPatientData() {
@@ -161,20 +170,34 @@ export function CenterPanel({patientId}:CenterPanelProps) {
     setInput('');
     setIsSearching(true);
 
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+    setError(null);
+    if (abortRef.current) {
+      abortRef.current.abort();
+    }
+    abortRef.current = new AbortController();
 
-    const answer = generateAIResponse(query);
-    setCurrentAnswer(answer);
-    setIsSearching(false);
+    try {
+      const answer = await callAgent([
+        { role: 'system', content: systemMessage },
+        { role: 'user', content: query }
+      ], { signal: abortRef.current.signal });
+      const formatted = formatAnswer(answer);
+      setCurrentAnswer(formatted);
 
-    const result: SearchResult = {
-      id: Date.now().toString(),
-      query,
-      answer,
-      timestamp: new Date().toISOString(),
-    };
-
-    setSearchHistory((prev) => [result, ...prev]);
+      const result: SearchResult = {
+        id: Date.now().toString(),
+        query,
+        answer: formatted,
+        timestamp: new Date().toISOString(),
+      };
+      setSearchHistory((prev) => [result, ...prev]);
+    } catch (e: any) {
+      if (e?.name !== 'AbortError') {
+        setError(e?.message || 'Failed to get answer from agent');
+      }
+    } finally {
+      setIsSearching(false);
+    }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -188,6 +211,7 @@ export function CenterPanel({patientId}:CenterPanelProps) {
     setCurrentQuery('');
     setCurrentAnswer('');
     setInput('');
+    setError(null);
   };
 
   const handleSelectHistoryItem = (item: SearchResult) => {
@@ -334,9 +358,13 @@ export function CenterPanel({patientId}:CenterPanelProps) {
                     </div>
                     <div className="flex-1">
                       <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">Answer</h3>
-                      <div className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap leading-relaxed">
-                        <Markdown>{currentAnswer}</Markdown>
-                      </div>
+                      {error ? (
+                        <div className="text-red-600 dark:text-red-400 text-sm">{error}</div>
+                      ) : (
+                        <div className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap leading-relaxed">
+                          <Markdown>{currentAnswer}</Markdown>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -393,4 +421,12 @@ export function CenterPanel({patientId}:CenterPanelProps) {
       )}
     </div>
   );
+}
+
+function formatAnswer(raw: string): string {
+  const normalized = raw
+    .replace(/\r\n/g, '\n')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+  return normalized;
 }
