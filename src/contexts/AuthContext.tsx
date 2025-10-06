@@ -7,12 +7,14 @@ export interface User {
   fullName: string;
   npiId: string;
   specialty: string;
+  location?: string;
+  role?: string;
 }
 
 interface AuthContextType {
   user: User | null;
   login: (email: string, password: string) => Promise<void>;
-  signup: (fullName: string, email: string, password: string, npiId: string, specialty: string) => Promise<void>;
+  signup: (fullName: string, email: string, password: string, npiId: string, specialty: string, location: string, role: string) => Promise<void>;
   logout: () => void;
   isLoading: boolean;
 }
@@ -81,7 +83,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     email: string,
     password: string,
     npiId: string,
-    specialty: string
+    specialty: string,
+    location: string,
+    role: string
   ): Promise<void> => {
     setIsLoading(true);
     await new Promise(resolve => setTimeout(resolve, 1000));
