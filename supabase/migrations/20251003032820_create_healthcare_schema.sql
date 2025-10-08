@@ -37,8 +37,6 @@
   - `time` (text) - Appointment time
   - `reason` (text) - Reason for visit
   - `status` (text) - Appointment status (scheduled, completed, cancelled)
-  - `care_setting` (text) - Care setting (outpatient, inpatient, emergency, other)
-  - `encounter_type` (text) - Encounter type (new, followup, referral)
   - `created_at` (timestamptz) - Record creation timestamp
 
   ### 4. `medical_encounters`
@@ -166,8 +164,6 @@ CREATE TABLE IF NOT EXISTS appointments (
   status text DEFAULT 'scheduled' NOT NULL,
   type text DEFAULT 'Follow-up' NOT NULL,
   patient_category text DEFAULT 'existing' NOT NULL,
-  care_setting text DEFAULT 'outpatient' NOT NULL,
-  encounter_type text DEFAULT 'followup' NOT NULL,
   created_at timestamptz DEFAULT now()
 );
 

@@ -41,8 +41,6 @@ export interface Appointment {
   status: string;
   patient_category: 'existing' | 'existing-urgent' | 'new-to-practice' | 'referral';
   type: string;
-  care_setting: 'outpatient' | 'inpatient' | 'emergency' | 'other';
-  encounter_type: 'new' | 'followup' | 'referral';
   created_at: string;
 }
 
