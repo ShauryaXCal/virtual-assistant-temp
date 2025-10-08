@@ -101,8 +101,10 @@ export function RightPanel({ patientId, appointment }: RightPanelProps) {
   const handleReferral = async (specialist: Specialist) => {
     if (!patientId || !user) return;
 
+    const referralReason = appointment?.reason || 'General referral';
+
     if (user.id == "befec32a-c29a-4b31-a55c-cf23abe50b8d") {
-      await createFullReferralWorkflowForCardiologist(patientId, user.id, specialist.id, appointment?.reason || 'General referral');
+      await createFullReferralWorkflowForCardiologist(patientId, user.id, specialist.id, referralReason);
     }
     else {
       await createCardiologyFollowupWorkflow(patientId, user.id, specialist.id);
@@ -112,13 +114,13 @@ export function RightPanel({ patientId, appointment }: RightPanelProps) {
     setTimeout(() => setShowReferralSuccess(false), 3000);
   };
 
-  if (!patientId || !appointment) {
+  if (!patientId) {
     return (
       <div className="flex flex-col items-center justify-center h-full p-8 text-center">
         <User className="w-16 h-16 text-gray-400 dark:text-gray-600 mb-4" />
         <p className="text-gray-600 dark:text-gray-400 font-medium">No patient selected</p>
         <p className="text-sm text-gray-500 dark:text-gray-500 mt-2">
-          Select an appointment to view patient details
+          Select a patient or appointment to view details
         </p>
       </div>
     );
@@ -179,9 +181,15 @@ export function RightPanel({ patientId, appointment }: RightPanelProps) {
     const sections: SummarySection[] = [];
 
     // Header section
-    sections.push({
-      content: `${patient.name} is a ${patient.age}-year-old ${patient.gender.toLowerCase()} presenting for ${appointment.reason.toLowerCase()}.`
-    });
+    if (appointment) {
+      sections.push({
+        content: `${patient.name} is a ${patient.age}-year-old ${patient.gender.toLowerCase()} presenting for ${appointment.reason.toLowerCase()}.`
+      });
+    } else {
+      sections.push({
+        content: `${patient.name} is a ${patient.age}-year-old ${patient.gender.toLowerCase()}.`
+      });
+    }
 
     if (isNewPatient) {
       // New patient - show baseline summary
