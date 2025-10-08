@@ -13,6 +13,8 @@ interface Appointment {
   type: string;
   duration: number;
   patientCategory: 'existing' | 'existing-urgent' | 'new-to-practice' | 'referral';
+  careSetting: 'outpatient' | 'inpatient' | 'emergency' | 'other';
+  encounterType: 'new' | 'followup' | 'referral';
 }
 
 interface LeftPanelProps {
@@ -60,7 +62,9 @@ export function LeftPanel({ onSelectAppointment }: LeftPanelProps) {
             reason: apt.reason,
             type: apt.type,
             duration: 30,
-            patientCategory: apt.patient_category
+            patientCategory: apt.patient_category,
+            careSetting: apt.care_setting,
+            encounterType: apt.encounter_type
           };
         })
       );
@@ -76,16 +80,27 @@ export function LeftPanel({ onSelectAppointment }: LeftPanelProps) {
   const workdayEnd = 18;
   const hours = Array.from({ length: workdayEnd - workdayStart }, (_, i) => workdayStart + i);
 
-  const getCategoryColor = (category: PatientCategory) => {
-    switch (category) {
-      case 'existing':
-        return 'bg-healthcare-500 border-healthcare-600';
-      case 'existing-urgent':
-        return 'bg-orange-500 border-orange-600';
-      case 'new-to-practice':
+  const getCareSettingColor = (careSetting: 'outpatient' | 'inpatient' | 'emergency' | 'other') => {
+    switch (careSetting) {
+      case 'outpatient':
+        return 'bg-blue-500 border-blue-600';
+      case 'inpatient':
         return 'bg-green-500 border-green-600';
+      case 'emergency':
+        return 'bg-red-500 border-red-600';
+      case 'other':
+        return 'bg-gray-500 border-gray-600';
+    }
+  };
+
+  const getEncounterTypeBadge = (encounterType: 'new' | 'followup' | 'referral') => {
+    switch (encounterType) {
+      case 'new':
+        return { text: 'New', className: 'bg-green-600/90' };
+      case 'followup':
+        return { text: 'F/U', className: 'bg-blue-600/90' };
       case 'referral':
-        return 'bg-teal-500 border-teal-600';
+        return { text: 'Ref', className: 'bg-purple-600/90' };
     }
   };
 
@@ -160,12 +175,13 @@ export function LeftPanel({ onSelectAppointment }: LeftPanelProps) {
                       <div className="space-y-1">
                         {hourAppointments.map((appointment) => {
                           const Icon = getCategoryIcon(appointment.patientCategory);
+                          const encounterBadge = getEncounterTypeBadge(appointment.encounterType);
                           return (
                             <button
                               key={appointment.id}
                               onClick={() => onSelectAppointment(appointment.patientId, appointment)}
-                              className={`w-full px-2 py-1.5 rounded-md border-l-[3px] text-left transition-all duration-200 hover:shadow-sm ${getCategoryColor(
-                                appointment.patientCategory
+                              className={`w-full px-2 py-1.5 rounded-md border-l-[3px] text-left transition-all duration-200 hover:shadow-sm ${getCareSettingColor(
+                                appointment.careSetting
                               )} text-white group`}
                             >
                               <div className="flex items-center justify-between gap-2 mb-0.5">
@@ -173,6 +189,9 @@ export function LeftPanel({ onSelectAppointment }: LeftPanelProps) {
                                   <Icon className="w-3 h-3 flex-shrink-0 opacity-90" />
                                   <span className="text-[11px] font-semibold tracking-tight">
                                     {appointment.time}
+                                  </span>
+                                  <span className={`text-[9px] px-1.5 py-0.5 rounded ${encounterBadge.className} font-medium`}>
+                                    {encounterBadge.text}
                                   </span>
                                 </div>
                                 <span className="text-[10px] opacity-75 flex-shrink-0">
