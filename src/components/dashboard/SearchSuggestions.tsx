@@ -63,25 +63,25 @@ function categorizePatientSuggestions(suggestions: string[]): SuggestionCategory
   const categories: SuggestionCategory[] = [
     {
       id: 'medications',
-      title: 'Medications',
+      title: 'Ask about Medications',
       icon: Pill,
       suggestions: suggestions.filter(s => s.includes('💊')).map(s => s.replace('💊 ', '')),
     },
     {
       id: 'conditions',
-      title: 'Conditions',
+      title: 'Ask about Conditions',
       icon: Shield,
       suggestions: suggestions.filter(s => s.includes('⚠️')).map(s => s.replace('⚠️ ', '')),
     },
     {
       id: 'encounters',
-      title: 'Encounters & Visits',
+      title: 'Ask about Encounters & Visits',
       icon: ClipboardList,
       suggestions: suggestions.filter(s => s.includes('🗓️')).map(s => s.replace('🗓️ ', '')),
     },
     {
       id: 'labs',
-      title: 'Lab Results',
+      title: 'Ask about Lab Results',
       icon: Edit3,
       suggestions: suggestions.filter(s => s.includes('📊')).map(s => s.replace('📊 ', '')),
     },
