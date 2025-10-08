@@ -142,22 +142,19 @@ export function LeftPanel({ onSelectAppointment }: LeftPanelProps) {
               return (
                 <div
                   key={hour}
-                  className="flex border-b border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-900/50 transition-colors duration-150"
-                  style={{ minHeight: '80px' }}
+                  className="flex border-b border-gray-100 dark:border-gray-800/50 hover:bg-gray-50/50 dark:hover:bg-gray-900/30 transition-colors duration-150"
+                  style={{ minHeight: '60px' }}
                 >
-                  <div className="w-20 flex-shrink-0 p-3 pr-2 text-right border-r border-gray-200 dark:border-gray-800">
-                    <span className="text-xs font-medium text-gray-600 dark:text-gray-400">
+                  <div className="w-16 flex-shrink-0 py-1 pr-3 text-right">
+                    <span className="text-[11px] font-medium text-gray-500 dark:text-gray-500">
                       {formatTime(hour)}
                     </span>
                   </div>
 
-                  <div className="flex-1 p-2 relative">
+                  <div className="flex-1 py-1 pr-2 relative">
                     {hourAppointments.length === 0 ? (
                       <button className="w-full h-full flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity duration-200 group">
-                        <div className="flex items-center space-x-1 text-xs text-gray-400 dark:text-gray-500 group-hover:text-healthcare-500 dark:group-hover:text-healthcare-400">
-                          <Plus className="w-3 h-3" />
-                          <span>Add</span>
-                        </div>
+                        <Plus className="w-3.5 h-3.5 text-gray-300 dark:text-gray-700 group-hover:text-healthcare-400 dark:group-hover:text-healthcare-500" />
                       </button>
                     ) : (
                       <div className="space-y-1">
@@ -167,25 +164,25 @@ export function LeftPanel({ onSelectAppointment }: LeftPanelProps) {
                             <button
                               key={appointment.id}
                               onClick={() => onSelectAppointment(appointment.patientId, appointment)}
-                              className={`w-full p-2 rounded-md border-l-4 text-left transition-all duration-200 hover:shadow-md ${getCategoryColor(
+                              className={`w-full px-2 py-1.5 rounded-md border-l-[3px] text-left transition-all duration-200 hover:shadow-sm ${getCategoryColor(
                                 appointment.patientCategory
-                              )} text-white`}
+                              )} text-white group`}
                             >
-                              <div className="flex items-start justify-between mb-1">
-                                <div className="flex items-center space-x-2 flex-1 min-w-0">
-                                  <Icon className="w-3.5 h-3.5 flex-shrink-0" />
-                                  <span className="text-xs font-semibold truncate">
+                              <div className="flex items-center justify-between gap-2 mb-0.5">
+                                <div className="flex items-center gap-1.5 flex-1 min-w-0">
+                                  <Icon className="w-3 h-3 flex-shrink-0 opacity-90" />
+                                  <span className="text-[11px] font-semibold tracking-tight">
                                     {appointment.time}
                                   </span>
                                 </div>
-                                <span className="text-[10px] opacity-90 flex-shrink-0 ml-1">
+                                <span className="text-[10px] opacity-75 flex-shrink-0">
                                   {appointment.duration}m
                                 </span>
                               </div>
-                              <p className="text-sm font-semibold leading-tight mb-1 truncate">
+                              <p className="text-xs font-semibold leading-tight truncate pl-[18px]">
                                 {appointment.patientName}
                               </p>
-                              <p className="text-xs opacity-90 line-clamp-2 leading-tight">
+                              <p className="text-[11px] opacity-80 line-clamp-1 leading-tight pl-[18px] mt-0.5">
                                 {appointment.reason}
                               </p>
                             </button>
