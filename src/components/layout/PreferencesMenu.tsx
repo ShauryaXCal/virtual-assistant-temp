@@ -1,5 +1,4 @@
-import { Settings, Users, LogOut, X, RefreshCcw } from 'lucide-react';
-import { usePreferences } from '../../contexts/PreferencesContext';
+import { Users, LogOut, X, RefreshCcw } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useState, useEffect } from 'react';
 import { deleteFollowupDataByDate, getAllDoctors } from '../../lib/database';
@@ -10,7 +9,6 @@ interface PreferencesMenuProps {
 }
 
 export function PreferencesMenu({ onClose }: PreferencesMenuProps) {
-  const { preferences, updateDataPriority } = usePreferences();
   const { user, logout } = useAuth();
   const [showAccountSwitch, setShowAccountSwitch] = useState(false);
   const [accounts, setAccounts] = useState<Doctor[]>([]);
@@ -30,15 +28,6 @@ export function PreferencesMenu({ onClose }: PreferencesMenuProps) {
       window.dispatchEvent(switchEvent);
     }, 100);
   };
-
-  const dataTypes = [
-    { key: 'labs' as const, label: 'Lab Results' },
-    { key: 'vitals' as const, label: 'Vital Signs' },
-    { key: 'medications' as const, label: 'Medications' },
-    { key: 'allergies' as const, label: 'Allergies' },
-    { key: 'procedures' as const, label: 'Procedures' },
-    { key: 'imaging' as const, label: 'Imaging' },
-  ];
 
   return (
     <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 z-50">
@@ -60,34 +49,6 @@ export function PreferencesMenu({ onClose }: PreferencesMenuProps) {
 
       {!showAccountSwitch ? (
         <>
-          <div className="p-4 border-b border-gray-200 dark:border-gray-700">
-            <div className="flex items-center space-x-2 mb-3">
-              <Settings className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-              <h4 className="text-sm font-medium text-gray-900 dark:text-white">Data Priority</h4>
-            </div>
-            <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">
-              Select which data types the AI should prioritize in recommendations
-            </p>
-            <div className="space-y-2">
-              {dataTypes.map((type) => (
-                <label
-                  key={type.key}
-                  className="flex items-center space-x-2 cursor-pointer group"
-                >
-                  <input
-                    type="checkbox"
-                    checked={preferences.dataPriority[type.key]}
-                    onChange={(e) => updateDataPriority({ [type.key]: e.target.checked })}
-                    className="w-4 h-4 text-healthcare-500 bg-gray-100 border-gray-300 rounded focus:ring-healthcare-500 dark:focus:ring-healthcare-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
-                  />
-                  <span className="text-sm text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors duration-200">
-                    {type.label}
-                  </span>
-                </label>
-              ))}
-            </div>
-          </div>
-
           <div className="p-2">
             <button
               onClick={() => setShowAccountSwitch(true)}
