@@ -58,8 +58,8 @@ const GENERAL_CATEGORIES: SuggestionCategory[] = [
 ];
 
 export function SearchSuggestions({ onSelectSuggestion, patientSpecific = false }: SearchSuggestionsProps) {
+  const [showFullView, setShowFullView] = useState(false);
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
-  const [isExpanded, setIsExpanded] = useState(false);
 
   const toggleCategory = (categoryId: string) => {
     setExpandedCategories(prev => {
@@ -73,32 +73,49 @@ export function SearchSuggestions({ onSelectSuggestion, patientSpecific = false 
     });
   };
 
-  const toggleAllCategories = () => {
-    if (isExpanded) {
-      setExpandedCategories(new Set());
-      setIsExpanded(false);
-    } else {
-      setExpandedCategories(new Set(GENERAL_CATEGORIES.map(c => c.id)));
-      setIsExpanded(true);
-    }
-  };
+  const allSuggestions = GENERAL_CATEGORIES.flatMap(cat => cat.suggestions);
+
+  if (!showFullView) {
+    return (
+      <div className="w-full">
+        <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-3">Try asking:</p>
+        <div className="flex flex-wrap gap-2 mb-4">
+          {allSuggestions.slice(0, 8).map((suggestion, index) => (
+            <button
+              key={index}
+              onClick={() => onSelectSuggestion(suggestion)}
+              className="px-3 py-1.5 text-xs bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-full hover:bg-healthcare-50 hover:border-healthcare-500 dark:hover:bg-healthcare-900/20 dark:hover:border-healthcare-500 text-gray-700 dark:text-gray-300 transition-all duration-200 hover:shadow-sm max-w-xs truncate"
+              title={suggestion}
+            >
+              {suggestion.length > 60 ? suggestion.slice(0, 60) + '...' : suggestion}
+            </button>
+          ))}
+        </div>
+        <div className="flex justify-center">
+          <button
+            onClick={() => setShowFullView(true)}
+            className="flex items-center space-x-1 px-4 py-2 text-sm font-medium text-healthcare-500 hover:text-healthcare-600 hover:bg-healthcare-50 dark:hover:bg-healthcare-900/20 rounded-lg transition-colors"
+          >
+            <span>Explore More Capabilities</span>
+            <ChevronDown className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full space-y-4">
       <div className="flex items-center justify-between mb-3">
         <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
-          {patientSpecific ? 'Patient-Specific Suggestions:' : 'Explore More Capabilities'}
+          Explore More Capabilities
         </p>
         <button
-          onClick={toggleAllCategories}
+          onClick={() => setShowFullView(false)}
           className="flex items-center space-x-1 text-sm font-medium text-healthcare-500 hover:text-healthcare-600 transition-colors"
         >
-          <span>{isExpanded ? 'Collapse All' : 'Expand All'}</span>
-          {isExpanded ? (
-            <ChevronUp className="w-4 h-4" />
-          ) : (
-            <ChevronDown className="w-4 h-4" />
-          )}
+          <span>Collapse</span>
+          <ChevronUp className="w-4 h-4" />
         </button>
       </div>
 
@@ -143,9 +160,7 @@ export function SearchSuggestions({ onSelectSuggestion, patientSpecific = false 
                   <button
                     key={index}
                     onClick={() => onSelectSuggestion(suggestion)}
-                    className={`w-full px-4 py-3 text-left hover:bg-healthcare-50 dark:hover:bg-healthcare-900/20 transition-all duration-200 flex items-start justify-between group ${
-                      isCategoryExpanded ? 'text-sm' : 'text-xs'
-                    } ${
+                    className={`w-full px-4 py-3 text-left hover:bg-healthcare-50 dark:hover:bg-healthcare-900/20 transition-all duration-200 flex items-start justify-between group text-sm ${
                       index < displaySuggestions.length - 1
                         ? 'border-b border-gray-100 dark:border-gray-800'
                         : ''
@@ -154,9 +169,7 @@ export function SearchSuggestions({ onSelectSuggestion, patientSpecific = false 
                     <span className="flex-1 text-gray-700 dark:text-gray-300 leading-relaxed pr-3">
                       {suggestion}
                     </span>
-                    <ArrowRight className={`flex-shrink-0 text-gray-400 group-hover:text-healthcare-500 opacity-0 group-hover:opacity-100 transition-all duration-200 ${
-                      isCategoryExpanded ? 'w-4 h-4 mt-0.5' : 'w-3 h-3'
-                    }`} />
+                    <ArrowRight className="w-4 h-4 mt-0.5 flex-shrink-0 text-gray-400 group-hover:text-healthcare-500 opacity-0 group-hover:opacity-100 transition-all duration-200" />
                   </button>
                 ))}
               </div>
