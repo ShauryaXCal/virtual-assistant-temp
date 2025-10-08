@@ -169,6 +169,221 @@ export function CenterPanel({patientId, rightPanelOpen}:CenterPanelProps) {
 
 
 
+  const getMockResponse = (query: string): string => {
+    const lowerQuery = query.toLowerCase();
+
+    // Patient-specific responses
+    if (lowerQuery.includes('john') && lowerQuery.includes('renal')) {
+      return `## Renal Function Assessment for John Michael Doe
+
+**Current Status:**
+- eGFR: 68 mL/min/1.73m² (Stage 2 CKD - Mild kidney damage with mild loss of kidney function)
+- Recent medication changes: Started on Metoprolol and Clopidogrel
+
+**Clinical Significance:**
+1. **Medication Impact:** Both Metoprolol and Clopidogrel require monitoring in CKD:
+   - Metoprolol: Primarily hepatically metabolized but active metabolites are renally excreted
+   - Clopidogrel: No dose adjustment needed for mild-moderate CKD
+
+2. **Monitoring Recommendations:**
+   - Repeat BMP with eGFR in 2 weeks as planned ✓
+   - Monitor for signs of declining renal function
+   - Check potassium levels (beta-blockers can affect K+ in CKD)
+   - Assess for volume status and blood pressure control
+
+3. **Follow-up Actions:**
+   - Ensure patient is avoiding NSAIDs
+   - Review all nephrotoxic medications
+   - Consider ACE-I/ARB if not already on one for cardio-renal protection
+   - Patient education on CKD and dietary modifications
+
+**Next Steps:**
+Schedule lab review appointment in 2-3 weeks to assess trend and adjust management accordingly.`;
+    }
+
+    if (lowerQuery.includes('robert') && lowerQuery.includes('diabetes')) {
+      return `## Annual Diabetes Monitoring for Robert Johnson
+
+**Required Labs (Last done >1 year ago):**
+1. **HbA1c** - Assess glycemic control over past 3 months
+2. **Lipid Panel** - CV risk assessment (LDL goal <70 mg/dL for diabetics)
+3. **Urine Microalbumin/Creatinine Ratio** - Screen for diabetic nephropathy
+
+**Additional Required Screenings:**
+- **Diabetic Retinal Exam** - Annual dilated eye exam
+- **Comprehensive Foot Exam** - Monofilament testing, vascular assessment
+- **Blood Pressure Monitoring** - Target <130/80 mmHg
+
+**Clinical Considerations:**
+- Review current diabetes medications and adherence
+- Assess for hypoglycemia episodes
+- Screen for diabetic neuropathy symptoms
+- Update vaccinations (flu, pneumococcal, COVID-19)
+
+**Orders to Place:**
+□ Lab orders for HbA1c, lipid panel, urine microalbumin
+□ Ophthalmology referral for retinal screening
+□ Podiatry referral or in-office comprehensive foot exam
+□ Home BP monitoring log review
+
+**Follow-up:**
+Schedule return visit in 2-3 weeks to review labs and screening results.`;
+    }
+
+    if (lowerQuery.includes('emily') && lowerQuery.includes('asthma')) {
+      return `## Asthma Control Assessment - Emily Chen
+
+**Peak Flow Status:**
+- Previous: 380 L/min (during steroid taper)
+- Goal: ≥450 L/min (indicates good asthma control)
+- Current status: Below target suggests suboptimal control
+
+**Clinical Assessment Needed:**
+1. **Symptom Review:**
+   - Frequency of rescue inhaler use
+   - Nighttime awakenings
+   - Exercise limitation
+   - Recent exacerbations
+
+2. **Peak Flow Follow-up:**
+   - Repeat spirometry/peak flow measurement
+   - Assess bronchodilator response
+   - Review proper inhaler technique
+
+**Management Considerations:**
+- **Steroid Taper Evaluation:** Current dose may need adjustment
+- **IgE Level:** 250 IU/mL suggests significant allergic component
+- **Add-on Therapy Options:**
+  - Montelukast 10mg daily (leukotriene modifier)
+  - Daily antihistamine for allergic rhinitis
+  - Consider biologic therapy if severe persistent asthma
+
+**Action Plan:**
+1. Schedule pulmonary function testing
+2. Consider stepping up controller medication
+3. Evaluate environmental triggers and allergen exposure
+4. Review asthma action plan with patient
+5. Consider allergy testing if not previously done
+
+**Follow-up:** 1-2 weeks after medication adjustment to reassess symptoms and peak flow.`;
+    }
+
+    if (lowerQuery.includes('metoprolol') || lowerQuery.includes('beta blocker')) {
+      return `## Metoprolol in Cardiovascular Disease
+
+**Indications:**
+- Post-MI cardioprotection
+- Heart failure with reduced ejection fraction (HFrEF)
+- Hypertension
+- Atrial fibrillation rate control
+- Coronary artery disease
+
+**Dosing:**
+- Metoprolol Succinate (Toprol XL): 25-200mg daily
+- Metoprolol Tartrate: 25-100mg BID
+- Start low, titrate to effect and tolerance
+
+**Key Monitoring Parameters:**
+- Heart rate (target 50-60 bpm for post-MI)
+- Blood pressure
+- Signs of heart failure exacerbation
+- Renal function (especially in CKD)
+
+**Important Considerations:**
+- Do not abruptly discontinue (risk of rebound hypertension/angina)
+- May mask hypoglycemia symptoms in diabetics
+- Contraindicated in severe bradycardia, heart block, decompensated HF
+- Use caution in COPD/asthma (cardioselective but not absolute)
+
+**Drug Interactions:**
+- Calcium channel blockers (additive bradycardia/hypotension)
+- Digoxin (enhanced AV block)
+- Antiarrhythmics (additive effects)`;
+    }
+
+    // Generic responses
+    if (lowerQuery.includes('hypertension') || lowerQuery.includes('blood pressure')) {
+      return `## Hypertension Management Guidelines
+
+**Blood Pressure Targets:**
+- General population: <130/80 mmHg
+- Diabetes/CKD: <130/80 mmHg
+- Age >65: <130/80 mmHg (if tolerated)
+
+**First-Line Agents:**
+1. ACE Inhibitors or ARBs (especially with diabetes/CKD)
+2. Thiazide diuretics (hydrochlorothiazide, chlorthalidone)
+3. Calcium channel blockers (amlodipine, nifedipine)
+4. Beta-blockers (in specific conditions: CAD, HF)
+
+**Treatment Algorithm:**
+- Start with monotherapy for stage 1 HTN
+- Combination therapy for stage 2 HTN (BP >140/90)
+- Lifestyle modifications: DASH diet, exercise, weight loss, sodium restriction
+
+**Monitoring:**
+- Recheck BP in 1 month after starting/adjusting medication
+- Annual labs: BMP, lipids, urinalysis
+- Home BP monitoring encouraged`;
+    }
+
+    if (lowerQuery.includes('statin') || lowerQuery.includes('cholesterol')) {
+      return `## Statin Therapy Guidelines
+
+**Indications for Statin Therapy:**
+1. **High-intensity statin** (LDL >50% reduction):
+   - Clinical ASCVD (prior MI, stroke, PAD)
+   - LDL ≥190 mg/dL
+   - Diabetes age 40-75 with LDL 70-189 + risk factors
+
+2. **Moderate-intensity statin** (LDL 30-49% reduction):
+   - Diabetes age 40-75 without additional risk factors
+   - 10-year ASCVD risk 7.5-20%
+
+**High-Intensity Statins:**
+- Atorvastatin 40-80mg daily
+- Rosuvastatin 20-40mg daily
+
+**Monitoring:**
+- Baseline: Lipid panel, hepatic function, CK (if symptomatic)
+- Follow-up: Lipid panel at 4-12 weeks, then annually
+- Monitor for muscle symptoms (myalgias, weakness)
+
+**Side Effects:**
+- Myalgias (most common)
+- Elevated liver enzymes (rare)
+- Increased glucose/diabetes risk (small increase)
+
+**Drug Interactions:**
+- Grapefruit juice (with atorvastatin, simvastatin)
+- Fibrates (increased myopathy risk)
+- Macrolide antibiotics`;
+    }
+
+    // Default response
+    return `## Clinical Information
+
+Based on your query: "${query}"
+
+**General Approach:**
+1. Review patient's current medications and conditions
+2. Consider evidence-based guidelines
+3. Assess individual patient factors
+4. Evaluate risk vs benefit
+5. Discuss shared decision-making with patient
+
+**Recommended Actions:**
+- Review current clinical guidelines (UpToDate, ACC/AHA)
+- Consider specialist consultation if needed
+- Document clinical reasoning in patient chart
+- Schedule appropriate follow-up
+
+**Important Reminder:**
+Always individualize care based on patient-specific factors, comorbidities, and preferences. Consider consulting relevant specialists for complex cases.
+
+*Would you like me to provide more specific information about this topic?*`;
+  };
+
   const handleSearch = async (queryText?: string) => {
     const query = queryText || input;
     if (!query.trim() || isSearching) return;
@@ -178,49 +393,32 @@ export function CenterPanel({patientId, rightPanelOpen}:CenterPanelProps) {
     setInput('');
     setIsSearching(true);
     setSearchStep(0);
-
     setError(null);
-    if (abortRef.current) {
-      abortRef.current.abort();
-    }
-    abortRef.current = new AbortController();
 
     try {
-      const historyMessages = conversation.flatMap(item => ([
-        { role: 'user' as const, content: item.query },
-        { role: 'assistant' as const, content: item.answer }
-      ]));
-
-      const agentPromise = callAgent([
-        { role: 'system', content: systemMessage },
-        ...historyMessages,
-        { role: 'user', content: query }
-      ], { signal: abortRef.current.signal });
-
-      // Show step progression while awaiting the agent
-      await new Promise((resolve) => setTimeout(resolve, 600));
+      // Show step progression
+      await new Promise((resolve) => setTimeout(resolve, 800));
       setSearchStep(1);
-      await new Promise((resolve) => setTimeout(resolve, 600));
+      await new Promise((resolve) => setTimeout(resolve, 800));
       setSearchStep(2);
-      await new Promise((resolve) => setTimeout(resolve, 600));
+      await new Promise((resolve) => setTimeout(resolve, 800));
       setSearchStep(3);
+      await new Promise((resolve) => setTimeout(resolve, 600));
 
-      const answer = await agentPromise;
-      const formatted = formatAnswer(answer);
-      setCurrentAnswer(formatted);
+      // Get mock response
+      const answer = getMockResponse(query);
+      setCurrentAnswer(answer);
 
       const result: SearchResult = {
         id: Date.now().toString(),
         query,
-        answer: formatted,
+        answer,
         timestamp: new Date().toISOString(),
       };
       setConversation((prev) => [...prev, result]);
       setSearchHistory((prev) => [result, ...prev]);
     } catch (e: any) {
-      if (e?.name !== 'AbortError') {
-        setError(e?.message || 'Failed to get answer from agent');
-      }
+      setError(e?.message || 'Failed to get answer');
     } finally {
       setIsSearching(false);
       setSearchStep(0);
