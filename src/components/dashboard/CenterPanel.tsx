@@ -1,5 +1,5 @@
 import { useMemo, useRef, useState, useEffect } from 'react';
-import { Search, Loader2, Sparkles, ArrowRight, ChevronDown, ChevronUp } from 'lucide-react';
+import { Search, Loader2, Sparkles, ArrowRight, ChevronDown, ChevronUp, AlarmCheck, ChevronRight, ChevronRightCircleIcon } from 'lucide-react';
 import { CHAT_SUGGESTIONS } from '../../data/mockData';
 import Markdown from 'react-markdown'
 
@@ -37,25 +37,25 @@ function generatePatientQuestions(
 
   // --- Medications ---
   medications.forEach(med => {
-    questions.push(`Why was ${med.name} prescribed?`);
-    questions.push(`When was ${med.name} started?`);
+    questions.push(`💊 Why was ${med.name} prescribed?`);
+    questions.push(`💊 When was ${med.name} started?`);
     if (med.status === "discontinued") {
-      questions.push(`When was ${med.name} discontinued?`);
+      questions.push(`💊 When was ${med.name} discontinued?`);
     }
   });
 
   // --- Conditions ---
   conditions.forEach(cond => {
-    questions.push(`What is the history of ${cond.name}?`);
-    questions.push(`When was ${cond.name} diagnosed?`);
-    questions.push(`Is ${cond.name} active or resolved?`);
+    questions.push(`⚠️ What is the history of ${cond.name}?`);
+    questions.push(`⚠️ When was ${cond.name} diagnosed?`);
+    questions.push(`⚠️ Is ${cond.name} active or resolved?`);
     // Check if any medication notes mention this condition
     const relatedMeds = medications
       .filter(m => m.notes.toLowerCase().includes(cond.name.toLowerCase()))
       .map(m => m.name);
     if (relatedMeds.length) {
       questions.push(
-        `Which medications are being used to manage ${cond.name}? (e.g., ${relatedMeds.join(
+        `⚠️ Which medications are being used to manage ${cond.name}? (e.g., ${relatedMeds.join(
           ", "
         )})`
       );
@@ -64,25 +64,25 @@ function generatePatientQuestions(
 
   // --- Encounters ---
   encounters.forEach(enc => {
-    questions.push(`What was the diagnosis in the encounter on ${enc.encounter_date}?`);
+    questions.push(`🗓️ What was the diagnosis in the encounter on ${enc.encounter_date}?`);
     questions.push(
-      `What treatments or referrals were done in the encounter on ${enc.encounter_date}?`
+      `🗓️ What treatments or referrals were done in the encounter on ${enc.encounter_date}?`
     );
-    questions.push(`Show me encounters for reason: ${enc.reason}`);
+    questions.push(`🗓️ Show me encounters for reason: ${enc.reason}`);
   });
 
   // --- Labs ---
   labs.forEach(lab => {
-    questions.push(`What were the results of ${lab.test_name} on ${lab.test_date}?`);
+    questions.push(`📊 What were the results of ${lab.test_name} on ${lab.test_date}?`);
     if (lab.status !== "normal") {
-      questions.push(`Why was ${lab.test_name} abnormal?`);
+      questions.push(`📊 Why was ${lab.test_name} abnormal?`);
     }
   });
 
   // --- Patient Summary ---
-  questions.push(`What is the patient’s cardiac history?`);
-  questions.push(`What chronic conditions does the patient have?`);
-  questions.push(`What medications is the patient currently taking?`);
+  questions.push(`📋 What is the patient’s cardiac history?`);
+  questions.push(`📋 What chronic conditions does the patient have?`);
+  questions.push(`📋 What medications is the patient currently taking?`);
 
   return questions;
 }
@@ -290,9 +290,10 @@ export function CenterPanel({patientId, rightPanelOpen}:CenterPanelProps) {
                   onChange={(e) => setInput(e.target.value)}
                   onKeyPress={handleKeyPress}
                   placeholder="Ask anything..."
-                  className="w-full pl-12 pr-4 py-4 text-lg rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-healthcare-500 focus:border-transparent outline-none transition-all duration-200 shadow-sm hover:shadow-md"
+                  className="w-full pl-12 pr-4 py-4 text-lg rounded-full border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-healthcare-500 focus:border-transparent outline-none transition-all duration-200 shadow-sm hover:shadow-md"
                   autoFocus
                 />
+                <ChevronRightCircleIcon className="absolute right-4 top-1/2 -translate-y-1/2 w-8 h-8 text-healthcare-400 cursor-pointer hover:text-healthcare-500" />
               </div>
             </div>
 
@@ -311,16 +312,22 @@ export function CenterPanel({patientId, rightPanelOpen}:CenterPanelProps) {
                 ))}
               </div>
               {chatSuggestions.length > 6 && (
-                <div className="flex justify-center mt-2">
+                <div className="flex justify-center mt-4">
                   <button
-                    className="flex items-center justify-center w-8 h-8 rounded-full hover:bg-healthcare-100 dark:hover:bg-healthcare-900/20 transition-colors focus:outline-none"
+                    className="flex items-center justify-center p-2 rounded-full hover:bg-healthcare-100 dark:hover:bg-healthcare-900/20 transition-colors focus:outline-none"
                     onClick={() => setShowAllSuggestions((prev) => !prev)}
                     aria-label={showAllSuggestions ? 'Show less' : 'Show all'}
                   >
                     {showAllSuggestions ? (
-                      <ChevronUp className="w-6 h-6 text-healthcare-500" />
+                      <div className="flex">
+                        <p className="text-healthcare-500 mx-2">Collapse Suggestions</p>
+                      <ChevronUp className="w-6 h-6 text-healthcare-500" >Collapse</ChevronUp>
+                      </div>
                     ) : (
-                      <ChevronDown className="w-6 h-6 text-healthcare-500" />
+                      <div className="flex">
+                      <p className="text-healthcare-500 mx-2">Explore More Suggestions</p>
+                      <ChevronDown className="w-6 h-6 text-healthcare-500"><p>show</p>Show</ChevronDown>
+                      </div>
                     )}
                   </button>
                 </div>

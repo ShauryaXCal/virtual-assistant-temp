@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { User, Calendar, Activity, Pill, TestTube, FileText, AlertCircle, MoreVertical, Send } from 'lucide-react';
+import { User, Calendar, Activity, Pill, TestTube, FileText, AlertCircle, MoreVertical, Send, Info, X } from 'lucide-react';
 import {
   getPatientById,
   getMedicalEncountersByPatientId,
@@ -33,6 +33,7 @@ export function RightPanel({ patientId, appointment }: RightPanelProps) {
   const [activeTab, setActiveTab] = useState<Tab>('encounters');
   const [showReferralMenu, setShowReferralMenu] = useState(false);
   const [showReferralSuccess, setShowReferralSuccess] = useState(false);
+  const [showSummaryModal, setShowSummaryModal] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
   const [patient, setPatient] = useState<Patient | null>(null);
@@ -271,13 +272,22 @@ export function RightPanel({ patientId, appointment }: RightPanelProps) {
 
   return (
     <div className="flex flex-col h-full overflow-y-auto">
-      <div className="p-6 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
+      <div className="px-6 pt-4 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
         <div className="flex items-start space-x-3 mb-6">
           <div className="w-12 h-12 bg-healthcare-100 dark:bg-healthcare-900/30 rounded-full flex items-center justify-center flex-shrink-0">
             <User className="w-6 h-6 text-healthcare-600 dark:text-healthcare-400" />
           </div>
           <div className="flex-1">
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">{patient.name}</h2>
+            <div className="flex items-center space-x-2">
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-white">{patient.name}</h2>
+              <button
+                onClick={() => setShowSummaryModal(true)}
+                className="p-1 rounded-full hover:bg-healthcare-100 dark:hover:bg-healthcare-900/30 transition-colors duration-200"
+                aria-label="View patient summary"
+              >
+                <Info className="w-5 h-5 text-healthcare-600 dark:text-healthcare-400" />
+              </button>
+            </div>
             <div className="flex items-center space-x-3 text-sm text-gray-600 dark:text-gray-400 mt-1">
               <span>{patient.age} years</span>
               <span>•</span>
@@ -331,57 +341,72 @@ export function RightPanel({ patientId, appointment }: RightPanelProps) {
             </p>
           </div>
         )}
+      </div>
 
-        <div className="space-y-5">
-          <div>
-            <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">Patient Summary</h3>
-            <div className="grid grid-cols-2 gap-x-6 gap-y-3 text-sm">
-              <div>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mb-0.5">MRN</p>
-                <p className="text-gray-900 dark:text-white font-medium">{patient.mrn}</p>
-              </div>
-              <div>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Date of Birth</p>
-                <p className="text-gray-900 dark:text-white">{patient.date_of_birth}</p>
-              </div>
-              <div>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Insurance Provider</p>
-                <p className="text-gray-900 dark:text-white">{patient.insurance_provider}</p>
-              </div>
-              <div>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Policy Number</p>
-                <p className="text-gray-900 dark:text-white font-mono text-xs">{patient.insurance_policy_number}</p>
-              </div>
+      {showSummaryModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-900 rounded-xl shadow-2xl max-w-2xl w-full max-h-[80vh] overflow-hidden flex flex-col">
+            <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-800">
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Patient Information</h2>
+              <button
+                onClick={() => setShowSummaryModal(false)}
+                className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-200"
+                aria-label="Close modal"
+              >
+                <X className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+              </button>
             </div>
-          </div>
 
-          <div>
-            <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">Clinical Summary</h3>
-            <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 space-y-3">
-              {generatePatientSummary().map((section, index) => (
-                <div key={index}>
-                  {section.title ? (
-                    <div>
-                      <p className="text-xs font-semibold text-healthcare-600 dark:text-healthcare-400 mb-1">
-                        {section.title}
-                      </p>
-                      <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-line">
-                        {section.content}
-                      </p>
-                    </div>
-                  ) : (
-                    <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
-                      {section.content}
-                    </p>
-                  )}
+            <div className="overflow-y-auto p-6 space-y-6">
+              <div>
+                <div className="grid grid-cols-2 gap-x-6 gap-y-3 text-sm">
+                  <div>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mb-0.5">MRN</p>
+                    <p className="text-gray-900 dark:text-white font-medium">{patient.mrn}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Date of Birth</p>
+                    <p className="text-gray-900 dark:text-white">{patient.date_of_birth}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Insurance Provider</p>
+                    <p className="text-gray-900 dark:text-white">{patient.insurance_provider}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Policy Number</p>
+                    <p className="text-gray-900 dark:text-white font-mono text-xs">{patient.insurance_policy_number}</p>
+                  </div>
                 </div>
-              ))}
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      )}
 
       <div className="border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 sticky top-0 z-10">
+      <div className="p-4">
+                <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">Clinical Summary</h3>
+                <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 space-y-3">
+                  {generatePatientSummary().map((section, index) => (
+                    <div key={index}>
+                      {section.title ? (
+                        <div>
+                          <p className="text-xs font-semibold text-healthcare-600 dark:text-healthcare-400 mb-1">
+                            {section.title}
+                          </p>
+                          <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-line">
+                            {section.content}
+                          </p>
+                        </div>
+                      ) : (
+                        <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
+                          {section.content}
+                        </p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
         <div className="flex space-x-0.5 px-2 py-1.5 overflow-x-auto">
           {tabs.map((tab) => {
             const Icon = tab.icon;
