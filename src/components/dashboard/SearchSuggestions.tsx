@@ -92,29 +92,40 @@ function categorizePatientSuggestions(suggestions: string[]): SuggestionCategory
 
 export function SearchSuggestions({ onSelectSuggestion, patientSpecific = false, patientSuggestions = [] }: SearchSuggestionsProps) {
   const [showAllCategories, setShowAllCategories] = useState(false);
-  const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
+  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
 
   const toggleCategory = (categoryId: string) => {
-    setExpandedCategory(prev => prev === categoryId ? null : categoryId);
+    setExpandedCategories(prev => {
+      const next = new Set(prev);
+      if (next.has(categoryId)) {
+        next.delete(categoryId);
+      } else {
+        next.add(categoryId);
+      }
+      return next;
+    });
   };
 
   const categories = patientSpecific && patientSuggestions.length > 0
     ? categorizePatientSuggestions(patientSuggestions)
     : GENERAL_CATEGORIES;
 
-  const displayedSuggestions = categories.slice(0, 3).map(category => category.suggestions[0]);
+  const handleShowAllCategories = () => {
+    setShowAllCategories(true);
+    setExpandedCategories(new Set(categories.map(cat => cat.id)));
+  };
 
   if (!showAllCategories) {
     return (
       <div className="w-full space-y-2">
-        {displayedSuggestions.map((suggestion, index) => (
+        {categories.map((category, index) => (
           <button
             key={index}
-            onClick={() => onSelectSuggestion(suggestion)}
+            onClick={() => onSelectSuggestion(category.suggestions[0])}
             className="w-full px-3 py-2 text-left border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-200 flex items-center justify-between group"
           >
             <span className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed pr-3">
-              {suggestion}
+              {category.suggestions[0]}
             </span>
             <ArrowRight className="w-4 h-4 flex-shrink-0 text-gray-400 group-hover:text-healthcare-500 opacity-0 group-hover:opacity-100 transition-all duration-200" />
           </button>
@@ -122,7 +133,7 @@ export function SearchSuggestions({ onSelectSuggestion, patientSpecific = false,
 
         <div className="flex justify-center pt-2">
           <button
-            onClick={() => setShowAllCategories(true)}
+            onClick={handleShowAllCategories}
             className="flex items-center space-x-2 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-healthcare-500 dark:hover:text-healthcare-400 transition-colors"
           >
             <span>Explore More Capabilities</span>
@@ -136,7 +147,7 @@ export function SearchSuggestions({ onSelectSuggestion, patientSpecific = false,
   return (
     <div className="w-full space-y-3">
       {categories.map(category => {
-        const isCategoryExpanded = expandedCategory === category.id;
+        const isCategoryExpanded = expandedCategories.has(category.id);
         const IconComponent = category.icon;
 
         return (
@@ -155,7 +166,7 @@ export function SearchSuggestions({ onSelectSuggestion, patientSpecific = false,
                 </span>
               </div>
               {isCategoryExpanded ? (
-                <X className="w-4 h-4 text-gray-500" />
+                <ChevronDown className="w-4 h-4 text-gray-500 rotate-180" />
               ) : (
                 <ChevronDown className="w-4 h-4 text-gray-500" />
               )}
