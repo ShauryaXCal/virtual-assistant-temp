@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useMemo, useRef, useState, useEffect } from 'react';
 import { Search, Loader2, Sparkles, ArrowRight, ChevronDown, ChevronUp } from 'lucide-react';
-import { CHAT_SUGGESTIONS, generateAIResponse} from '../../data/mockData';
+import { CHAT_SUGGESTIONS } from '../../data/mockData';
 import Markdown from 'react-markdown'
 
 
@@ -13,7 +13,8 @@ import {
   getLabReportsByPatientId,
 } from '../../lib/database';
 
-// import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '../../contexts/AuthContext';
+import { callAgent } from '../../lib/agentClient';
 
 import type { Patient, MedicalEncounter, Condition, Medication, LabReport } from '../../lib/supabase';
 
@@ -97,17 +98,20 @@ interface SearchResult {
 interface CenterPanelProps {
   patientId: string | null;
   appointment: { id: string; time: string; reason: string } | null;
+  rightPanelOpen: boolean;
 }
 
-export function CenterPanel({patientId}:CenterPanelProps) {
+export function CenterPanel({patientId, rightPanelOpen}:CenterPanelProps) {
 
-  // const { user } = useAuth();
+  const { user } = useAuth();
 
   const [searchHistory, setSearchHistory] = useState<SearchResult[]>([]);
   const [currentQuery, setCurrentQuery] = useState('');
   const [currentAnswer, setCurrentAnswer] = useState('');
   const [isSearching, setIsSearching] = useState(false);
+  const [searchStep, setSearchStep] = useState(0);
   const [input, setInput] = useState('');
+  const [conversation, setConversation] = useState<SearchResult[]>([]);
 
 
   // const [patient, setPatient] = useState<Patient | null>(null);
@@ -118,11 +122,22 @@ export function CenterPanel({patientId}:CenterPanelProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [chatSuggestions, setChatSuggestions] = useState<string[]>(CHAT_SUGGESTIONS);
   const [showAllSuggestions, setShowAllSuggestions] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const abortRef = useRef<AbortController | null>(null);
+  const [currentPatientName, setCurrentPatientName] = useState<string | null>(null);
+
+  const systemMessage = useMemo(() => {
+    const doctorName = user?.fullName || 'Unknown Doctor';
+    const specialty = user?.specialty || 'General Medicine';
+    const patientContext = rightPanelOpen && currentPatientName ? ` The current patient is ${currentPatientName}.` : '';
+    return `You are a clinical assistant. The current user is Dr. ${doctorName} (Specialty: ${specialty}).${patientContext} Provide  evidence-informed answers with clear formatting.`;
+  }, [user, rightPanelOpen, currentPatientName]);
   
   useEffect(() => {
     async function loadPatientData() {
       if (!patientId) {
         setIsLoading(false);
+        setCurrentPatientName(null);
         return;
       }
 
@@ -137,6 +152,7 @@ export function CenterPanel({patientId}:CenterPanelProps) {
 
 
       setChatSuggestions(shuffleArray(generatePatientQuestions(encountersData, medicationsData, conditionsData, labsData)));
+      setCurrentPatientName(patientData ? patientData.name : null);
       
       // setPatient(patientData);
       // setEncounters(encountersData);
@@ -160,21 +176,54 @@ export function CenterPanel({patientId}:CenterPanelProps) {
     setCurrentAnswer('');
     setInput('');
     setIsSearching(true);
+    setSearchStep(0);
 
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+    setError(null);
+    if (abortRef.current) {
+      abortRef.current.abort();
+    }
+    abortRef.current = new AbortController();
 
-    const answer = generateAIResponse(query);
-    setCurrentAnswer(answer);
-    setIsSearching(false);
+    try {
+      const historyMessages = conversation.flatMap(item => ([
+        { role: 'user' as const, content: item.query },
+        { role: 'assistant' as const, content: item.answer }
+      ]));
 
-    const result: SearchResult = {
-      id: Date.now().toString(),
-      query,
-      answer,
-      timestamp: new Date().toISOString(),
-    };
+      const agentPromise = callAgent([
+        { role: 'system', content: systemMessage },
+        ...historyMessages,
+        { role: 'user', content: query }
+      ], { signal: abortRef.current.signal });
 
-    setSearchHistory((prev) => [result, ...prev]);
+      // Show step progression while awaiting the agent
+      await new Promise((resolve) => setTimeout(resolve, 600));
+      setSearchStep(1);
+      await new Promise((resolve) => setTimeout(resolve, 600));
+      setSearchStep(2);
+      await new Promise((resolve) => setTimeout(resolve, 600));
+      setSearchStep(3);
+
+      const answer = await agentPromise;
+      const formatted = formatAnswer(answer);
+      setCurrentAnswer(formatted);
+
+      const result: SearchResult = {
+        id: Date.now().toString(),
+        query,
+        answer: formatted,
+        timestamp: new Date().toISOString(),
+      };
+      setConversation((prev) => [...prev, result]);
+      setSearchHistory((prev) => [result, ...prev]);
+    } catch (e: any) {
+      if (e?.name !== 'AbortError') {
+        setError(e?.message || 'Failed to get answer from agent');
+      }
+    } finally {
+      setIsSearching(false);
+      setSearchStep(0);
+    }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -188,11 +237,15 @@ export function CenterPanel({patientId}:CenterPanelProps) {
     setCurrentQuery('');
     setCurrentAnswer('');
     setInput('');
+    setError(null);
+    setConversation([]);
   };
 
   const handleSelectHistoryItem = (item: SearchResult) => {
     setCurrentQuery(item.query);
     setCurrentAnswer(item.answer);
+    setConversation([item]);
+    setIsSearching(false);
     setInput('');
   };
 
@@ -211,7 +264,7 @@ export function CenterPanel({patientId}:CenterPanelProps) {
   };
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full overflow-y-auto">
       {!currentQuery && !currentAnswer ? (
         <div className="flex-1 flex flex-col items-center justify-center p-8">
           <div className="w-full max-w-3xl">
@@ -314,34 +367,127 @@ export function CenterPanel({patientId}:CenterPanelProps) {
             </div>
 
             {isSearching ? (
-              <div className="space-y-4">
-                <div className="flex items-center space-x-3 text-healthcare-500">
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                  <span className="text-sm font-medium">Searching medical databases and guidelines...</span>
-                </div>
-                <div className="space-y-3">
-                  {[1, 2, 3].map((i) => (
-                    <div key={i} className="h-4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" style={{ width: `${Math.random() * 40 + 60}%` }} />
-                  ))}
-                </div>
-              </div>
-            ) : (
-              <div className="prose prose-sm dark:prose-invert max-w-none">
-                <div className="p-6 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
-                  <div className="flex items-start space-x-3 mb-4">
-                    <div className="w-8 h-8 bg-healthcare-100 dark:bg-healthcare-900/30 rounded-lg flex items-center justify-center flex-shrink-0">
-                      <Sparkles className="w-5 h-5 text-healthcare-600 dark:text-healthcare-400" />
+              <div className="space-y-6">
+                {searchStep >= 0 && (
+                  <div className="flex items-center space-x-3 px-4 py-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg border-l-4 border-healthcare-500">
+                    {searchStep === 0 ? (
+                      <Loader2 className="w-5 h-5 animate-spin text-healthcare-500 flex-shrink-0" />
+                    ) : (
+                      <div className="w-5 h-5 rounded-full bg-healthcare-500 flex items-center justify-center flex-shrink-0">
+                        <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                        </svg>
+                      </div>
+                    )}
+                    <span className="text-sm font-medium text-gray-900 dark:text-white">
+                      {searchStep === 0 ? 'Analyzing query' : 'Finished analyzing'}
+                    </span>
+                  </div>
+                )}
+
+                <div className="space-y-3 pl-4 border-l-2 border-gray-200 dark:border-gray-700">
+                  <div className={`flex items-start space-x-3 transition-opacity duration-300 ${searchStep >= 1 ? 'opacity-100' : 'opacity-40'}`}>
+                    <div className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 ${
+                      searchStep === 1
+                        ? 'bg-healthcare-100 dark:bg-healthcare-900/30'
+                        : searchStep > 1
+                        ? 'bg-healthcare-500'
+                        : 'bg-gray-200 dark:bg-gray-700'
+                    }`}>
+                      {searchStep === 1 ? (
+                        <Loader2 className="w-3.5 h-3.5 text-healthcare-600 dark:text-healthcare-400 animate-spin" />
+                      ) : searchStep > 1 ? (
+                        <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                        </svg>
+                      ) : (
+                        <Search className="w-3.5 h-3.5 text-gray-400" />
+                      )}
                     </div>
                     <div className="flex-1">
-                      <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">Answer</h3>
-                      <div className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap leading-relaxed">
-                        <Markdown>{currentAnswer}</Markdown>
-                      </div>
+                      <p className={`text-sm ${searchStep >= 1 ? 'font-medium text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-400'}`}>
+                        Searching patient medical history
+                      </p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Reviewing encounters, conditions, medications, and lab results</p>
+                    </div>
+                  </div>
+
+                  <div className={`flex items-start space-x-3 transition-opacity duration-300 ${searchStep >= 2 ? 'opacity-100' : 'opacity-40'}`}>
+                    <div className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 ${
+                      searchStep === 2
+                        ? 'bg-healthcare-100 dark:bg-healthcare-900/30'
+                        : searchStep > 2
+                        ? 'bg-healthcare-500'
+                        : 'bg-gray-200 dark:bg-gray-700'
+                    }`}>
+                      {searchStep === 2 ? (
+                        <Loader2 className="w-3.5 h-3.5 text-healthcare-600 dark:text-healthcare-400 animate-spin" />
+                      ) : searchStep > 2 ? (
+                        <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                        </svg>
+                      ) : (
+                        <Search className="w-3.5 h-3.5 text-gray-400" />
+                      )}
+                    </div>
+                    <div className="flex-1">
+                      <p className={`text-sm ${searchStep >= 2 ? 'font-medium text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-400'}`}>
+                        Searching clinical guidelines and protocols
+                      </p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Accessing published medical literature, FDA, CDC, and more</p>
+                    </div>
+                  </div>
+
+                  <div className={`flex items-start space-x-3 transition-opacity duration-300 ${searchStep >= 3 ? 'opacity-100' : 'opacity-40'}`}>
+                    <div className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 ${
+                      searchStep >= 3
+                        ? 'bg-healthcare-100 dark:bg-healthcare-900/30'
+                        : 'bg-gray-200 dark:bg-gray-700'
+                    }`}>
+                      {searchStep >= 3 ? (
+                        <Loader2 className="w-3.5 h-3.5 text-healthcare-600 dark:text-healthcare-400 animate-spin" />
+                      ) : (
+                        <Sparkles className="w-3.5 h-3.5 text-gray-400" />
+                      )}
+                    </div>
+                    <div className="flex-1">
+                      <p className={`text-sm ${searchStep >= 3 ? 'font-medium text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-400'}`}>
+                        Synthesizing relevant information
+                      </p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Combining patient data with clinical evidence</p>
                     </div>
                   </div>
                 </div>
+              </div>
+            ) : (
+              <div className="prose prose-sm dark:prose-invert max-w-none space-y-4">
+                {conversation.map((turn) => (
+                  <div key={turn.id} className="p-6 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
+                    <div className="mb-3">
+                      <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Question</h3>
+                      <div className="text-gray-800 dark:text-gray-200 whitespace-pre-wrap leading-relaxed">
+                        {turn.query}
+                      </div>
+                    </div>
+                    <div className="flex items-start space-x-3">
+                      <div className="w-8 h-8 bg-healthcare-100 dark:bg-healthcare-900/30 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <Sparkles className="w-5 h-5 text-healthcare-600 dark:text-healthcare-400" />
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">Answer</h3>
+                        <div className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap leading-relaxed">
+                          <Markdown>{turn.answer}</Markdown>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
 
-                <div className="mt-6 p-4 bg-healthcare-50 dark:bg-healthcare-900/10 rounded-lg border border-healthcare-200 dark:border-healthcare-800">
+                {error && (
+                  <div className="text-red-600 dark:text-red-400 text-sm">{error}</div>
+                )}
+
+                <div className="p-4 bg-healthcare-50 dark:bg-healthcare-900/10 rounded-lg border border-healthcare-200 dark:border-healthcare-800">
                   <p className="text-xs text-healthcare-700 dark:text-healthcare-400">
                     <strong>Note:</strong> This information is based on current clinical guidelines and medical literature.
                     Always verify with the latest evidence-based sources and consider individual patient factors when making clinical decisions.
@@ -393,4 +539,12 @@ export function CenterPanel({patientId}:CenterPanelProps) {
       )}
     </div>
   );
+}
+
+function formatAnswer(raw: string): string {
+  const normalized = raw
+    .replace(/\r\n/g, '\n')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+  return normalized;
 }
