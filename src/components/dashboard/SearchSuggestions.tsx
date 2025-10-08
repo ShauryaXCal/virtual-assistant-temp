@@ -12,53 +12,85 @@ interface SuggestionCategory {
 interface SearchSuggestionsProps {
   onSelectSuggestion: (suggestion: string) => void;
   patientSpecific?: boolean;
+  patientSuggestions?: string[];
 }
 
 const GENERAL_CATEGORIES: SuggestionCategory[] = [
   {
-    id: 'tough-questions',
-    title: 'Complex Clinical Scenarios',
+    id: 'complex-cases',
+    title: 'Complex Clinical Decisions',
     icon: Edit3,
     suggestions: [
-      'What factors should guide the choice between immunotherapy and targeted therapy for metastatic melanoma with BRAF mutation?',
-      'How would you optimize heart failure management with reduced EF, chronic kidney disease, and recurrent hyperkalemia?',
-      'How do you balance anticoagulation in elderly patients with atrial fibrillation, fall risk, and recent GI bleeding?',
+      'How do I manage a diabetic patient with declining renal function on metformin?',
+      'What treatment options exist for refractory hypertension despite triple therapy?',
+      'How should I approach polypharmacy in elderly patients with multiple comorbidities?',
     ],
   },
   {
-    id: 'drug-side-effects',
-    title: 'Medication Safety & Side Effects',
+    id: 'drug-information',
+    title: 'Drug Information',
     icon: Pill,
     suggestions: [
-      'What are the most common side effects of metformin?',
-      'Are there serious or life-threatening effects from long-term lisinopril use?',
-      'What side effects of apixaban should I monitor in elderly or renally impaired patients?',
+      'What are the contraindications for starting a patient on warfarin?',
+      'Explain the mechanism of action and common adverse effects of statins',
+      'What monitoring parameters are required for patients on lithium therapy?',
     ],
   },
   {
-    id: 'guidelines',
-    title: 'Clinical Guidelines & Protocols',
+    id: 'clinical-guidelines',
+    title: 'Evidence-Based Guidelines',
     icon: Shield,
     suggestions: [
-      'What are current IDSA recommendations for multidrug-resistant Pseudomonas infections?',
-      'Summarize AHA/ACC guidelines for hypertension management with chronic kidney disease',
-      'What has been updated in the 2024 ADA guidelines?',
-      'What do ASCO guidelines recommend for immunotherapy in triple-negative breast cancer?',
+      'What are the latest ACC/AHA guidelines for heart failure management?',
+      'Summarize current CDC recommendations for adult immunization schedules',
+      'What are the GOLD criteria for COPD staging and treatment?',
+      'Describe the current guidelines for DVT prophylaxis in hospitalized patients',
     ],
   },
   {
-    id: 'workup',
-    title: 'Diagnostic Workup',
+    id: 'diagnostic-approach',
+    title: 'Diagnostic Approaches',
     icon: ClipboardList,
     suggestions: [
-      'Normal pap with HPV 18 positive - what is the workup?',
-      'Outline workup for suspected pulmonary embolism in pregnancy',
-      'What is the appropriate workup for new-onset atrial fibrillation?',
+      'What is the diagnostic workup for unexplained weight loss in adults?',
+      'How do I evaluate a patient with suspected thyroid dysfunction?',
+      'What tests should be ordered for a patient presenting with chest pain?',
     ],
   },
 ];
 
-export function SearchSuggestions({ onSelectSuggestion, patientSpecific = false }: SearchSuggestionsProps) {
+function categorizePatientSuggestions(suggestions: string[]): SuggestionCategory[] {
+  const categories: SuggestionCategory[] = [
+    {
+      id: 'medications',
+      title: 'Medications',
+      icon: Pill,
+      suggestions: suggestions.filter(s => s.includes('💊')).map(s => s.replace('💊 ', '')),
+    },
+    {
+      id: 'conditions',
+      title: 'Conditions',
+      icon: Shield,
+      suggestions: suggestions.filter(s => s.includes('⚠️')).map(s => s.replace('⚠️ ', '')),
+    },
+    {
+      id: 'encounters',
+      title: 'Encounters & Visits',
+      icon: ClipboardList,
+      suggestions: suggestions.filter(s => s.includes('🗓️')).map(s => s.replace('🗓️ ', '')),
+    },
+    {
+      id: 'labs',
+      title: 'Lab Results',
+      icon: Edit3,
+      suggestions: suggestions.filter(s => s.includes('📊')).map(s => s.replace('📊 ', '')),
+    },
+  ];
+
+  return categories.filter(cat => cat.suggestions.length > 0);
+}
+
+export function SearchSuggestions({ onSelectSuggestion, patientSpecific = false, patientSuggestions = [] }: SearchSuggestionsProps) {
   const [showAllCategories, setShowAllCategories] = useState(false);
   const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
 
@@ -66,16 +98,20 @@ export function SearchSuggestions({ onSelectSuggestion, patientSpecific = false 
     setExpandedCategory(prev => prev === categoryId ? null : categoryId);
   };
 
-  const displayedSuggestions = GENERAL_CATEGORIES.slice(0, 3).map(category => category.suggestions[0]);
+  const categories = patientSpecific && patientSuggestions.length > 0
+    ? categorizePatientSuggestions(patientSuggestions)
+    : GENERAL_CATEGORIES;
+
+  const displayedSuggestions = categories.slice(0, 3).map(category => category.suggestions[0]);
 
   if (!showAllCategories) {
     return (
-      <div className="w-full space-y-3">
+      <div className="w-full space-y-2">
         {displayedSuggestions.map((suggestion, index) => (
           <button
             key={index}
             onClick={() => onSelectSuggestion(suggestion)}
-            className="w-full px-4 py-2.5 text-left border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-200 flex items-center justify-between group"
+            className="w-full px-3 py-2 text-left border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-200 flex items-center justify-between group"
           >
             <span className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed pr-3">
               {suggestion}
@@ -99,7 +135,7 @@ export function SearchSuggestions({ onSelectSuggestion, patientSpecific = false 
 
   return (
     <div className="w-full space-y-3">
-      {GENERAL_CATEGORIES.map(category => {
+      {categories.map(category => {
         const isCategoryExpanded = expandedCategory === category.id;
         const IconComponent = category.icon;
 

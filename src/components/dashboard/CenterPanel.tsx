@@ -299,49 +299,11 @@ export function CenterPanel({patientId, rightPanelOpen}:CenterPanelProps) {
             </div>
 
             <div className="mb-8">
-              {!patientId ? (
-                <SearchSuggestions
-                  onSelectSuggestion={handleSearch}
-                  patientSpecific={false}
-                />
-              ) : (
-                <>
-                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-3">Try asking:</p>
-                  <div className={showAllSuggestions ? "grid grid-cols-1 md:grid-cols-2 gap-2 max-h-80 overflow-y-auto" : "grid grid-cols-1 md:grid-cols-2 gap-2"}>
-                    {(showAllSuggestions ? chatSuggestions : chatSuggestions.slice(0, 6)).map((suggestion, index) => (
-                      <button
-                        key={index}
-                        onClick={() => handleSearch(suggestion)}
-                        className="group px-4 py-3 text-left bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg hover:border-healthcare-500 dark:hover:border-healthcare-500 hover:shadow-md transition-all duration-200 flex items-center justify-between"
-                      >
-                        <span className="text-sm text-gray-700 dark:text-gray-300">{suggestion}</span>
-                        <ArrowRight className="w-4 h-4 text-gray-400 group-hover:text-healthcare-500 opacity-0 group-hover:opacity-100 transition-all duration-200" />
-                      </button>
-                    ))}
-                  </div>
-                  {chatSuggestions.length > 6 && (
-                    <div className="flex justify-center mt-4">
-                      <button
-                        className="flex items-center justify-center p-2 rounded-full hover:bg-healthcare-100 dark:hover:bg-healthcare-900/20 transition-colors focus:outline-none"
-                        onClick={() => setShowAllSuggestions((prev) => !prev)}
-                        aria-label={showAllSuggestions ? 'Show less' : 'Show all'}
-                      >
-                        {showAllSuggestions ? (
-                          <div className="flex">
-                            <p className="text-healthcare-500 mx-2">Collapse Suggestions</p>
-                          <ChevronUp className="w-6 h-6 text-healthcare-500" >Collapse</ChevronUp>
-                          </div>
-                        ) : (
-                          <div className="flex">
-                          <p className="text-healthcare-500 mx-2">Explore More Suggestions</p>
-                          <ChevronDown className="w-6 h-6 text-healthcare-500"><p>show</p>Show</ChevronDown>
-                          </div>
-                        )}
-                      </button>
-                    </div>
-                  )}
-                </>
-              )}
+              <SearchSuggestions
+                onSelectSuggestion={handleSearch}
+                patientSpecific={!!patientId}
+                patientSuggestions={patientId ? chatSuggestions : []}
+              />
             </div>
 
             {searchHistory.length > 0 && (
