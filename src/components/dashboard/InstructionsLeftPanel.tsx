@@ -100,14 +100,14 @@ export function InstructionsLeftPanel() {
                   { value: 'concise', label: 'Concise', desc: 'Key points only, minimal elaboration' },
                   { value: 'detailed', label: 'Detailed', desc: 'Comprehensive analysis with full context' },
                 ].map(option => (
-                  <label key={option.value} className="flex items-start gap-2 cursor-pointer group p-2 rounded-md hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                  <label key={option.value} className="flex items-start gap-2.5 cursor-pointer group p-2 rounded-md hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
                     <input
                       type="radio"
                       name="outputFormat"
                       value={option.value}
                       checked={settings.outputFormat === option.value}
                       onChange={(e) => updateSetting('outputFormat', e.target.value)}
-                      className="mt-0.5 w-4 h-4 text-healthcare-500 focus:ring-healthcare-500"
+                      className="mt-[3px] w-3.5 h-3.5 text-healthcare-500 focus:ring-1 focus:ring-healthcare-500 focus:ring-offset-0"
                     />
                     <div className="flex-1">
                       <div className="text-sm font-medium text-gray-900 dark:text-white">{option.label}</div>
@@ -156,12 +156,12 @@ export function InstructionsLeftPanel() {
                   { value: 'documentation', label: 'Documentation Support', desc: 'Help with clinical documentation and coding' },
                   { value: 'differential', label: 'Differential Diagnosis', desc: 'Explore alternative diagnoses and red flags' },
                 ].map(action => (
-                  <label key={action.value} className="flex items-start gap-2 cursor-pointer group p-2 rounded-md hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                  <label key={action.value} className="flex items-start gap-2.5 cursor-pointer group p-2 rounded-md hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
                     <input
                       type="checkbox"
                       checked={settings.actionTypes.includes(action.value)}
                       onChange={() => toggleActionType(action.value)}
-                      className="mt-0.5 w-4 h-4 rounded border-gray-300 dark:border-gray-700 text-healthcare-500 focus:ring-healthcare-500"
+                      className="mt-[3px] w-3.5 h-3.5 rounded border-gray-300 dark:border-gray-700 text-healthcare-500 focus:ring-1 focus:ring-healthcare-500 focus:ring-offset-0"
                     />
                     <div className="flex-1">
                       <div className="text-sm font-medium text-gray-900 dark:text-white">{action.label}</div>
@@ -183,14 +183,14 @@ export function InstructionsLeftPanel() {
                   { value: 'conversational', label: 'Conversational', desc: 'Friendly, approachable tone with explanations' },
                   { value: 'clinical', label: 'Clinical & Formal', desc: 'Professional medical language suitable for documentation' },
                 ].map(style => (
-                  <label key={style.value} className="flex items-start gap-2 cursor-pointer group p-2 rounded-md hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                  <label key={style.value} className="flex items-start gap-2.5 cursor-pointer group p-2 rounded-md hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
                     <input
                       type="radio"
                       name="responseStyle"
                       value={style.value}
                       checked={settings.responseStyle === style.value}
                       onChange={(e) => updateSetting('responseStyle', e.target.value)}
-                      className="mt-0.5 w-4 h-4 text-healthcare-500 focus:ring-healthcare-500"
+                      className="mt-[3px] w-3.5 h-3.5 text-healthcare-500 focus:ring-1 focus:ring-healthcare-500 focus:ring-offset-0"
                     />
                     <div className="flex-1">
                       <div className="text-sm font-medium text-gray-900 dark:text-white">{style.label}</div>
@@ -211,14 +211,14 @@ export function InstructionsLeftPanel() {
                   { value: 'medium', label: 'Balanced', desc: 'Important details with some context and reasoning' },
                   { value: 'high', label: 'Comprehensive', desc: 'Full explanations, alternatives, and supporting evidence' },
                 ].map(level => (
-                  <label key={level.value} className="flex items-start gap-2 cursor-pointer group p-2 rounded-md hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                  <label key={level.value} className="flex items-start gap-2.5 cursor-pointer group p-2 rounded-md hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
                     <input
                       type="radio"
                       name="detailLevel"
                       value={level.value}
                       checked={settings.detailLevel === level.value}
                       onChange={(e) => updateSetting('detailLevel', e.target.value)}
-                      className="mt-0.5 w-4 h-4 text-healthcare-500 focus:ring-healthcare-500"
+                      className="mt-[3px] w-3.5 h-3.5 text-healthcare-500 focus:ring-1 focus:ring-healthcare-500 focus:ring-offset-0"
                     />
                     <div className="flex-1">
                       <div className="text-sm font-medium text-gray-900 dark:text-white">{level.label}</div>
@@ -234,36 +234,36 @@ export function InstructionsLeftPanel() {
               subtitle="Fine-tune how the AI assists you"
             >
               <div className="space-y-2">
-                <label className="flex items-start gap-2 cursor-pointer group p-2 rounded-md hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                <label className="flex items-start gap-2.5 cursor-pointer group p-2 rounded-md hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
                   <input
                     type="checkbox"
                     checked={settings.includeReferences}
                     onChange={(e) => updateSetting('includeReferences', e.target.checked)}
-                    className="mt-0.5 w-4 h-4 rounded border-gray-300 dark:border-gray-700 text-healthcare-500 focus:ring-healthcare-500"
+                    className="mt-[3px] w-3.5 h-3.5 rounded border-gray-300 dark:border-gray-700 text-healthcare-500 focus:ring-1 focus:ring-healthcare-500 focus:ring-offset-0"
                   />
                   <div className="flex-1">
                     <div className="text-sm font-medium text-gray-900 dark:text-white">Include Medical References</div>
                     <div className="text-xs text-gray-600 dark:text-gray-400">Cite guidelines, studies, or clinical resources when applicable</div>
                   </div>
                 </label>
-                <label className="flex items-start gap-2 cursor-pointer group p-2 rounded-md hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                <label className="flex items-start gap-2.5 cursor-pointer group p-2 rounded-md hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
                   <input
                     type="checkbox"
                     checked={settings.suggestFollowups}
                     onChange={(e) => updateSetting('suggestFollowups', e.target.checked)}
-                    className="mt-0.5 w-4 h-4 rounded border-gray-300 dark:border-gray-700 text-healthcare-500 focus:ring-healthcare-500"
+                    className="mt-[3px] w-3.5 h-3.5 rounded border-gray-300 dark:border-gray-700 text-healthcare-500 focus:ring-1 focus:ring-healthcare-500 focus:ring-offset-0"
                   />
                   <div className="flex-1">
                     <div className="text-sm font-medium text-gray-900 dark:text-white">Suggest Follow-up Actions</div>
                     <div className="text-xs text-gray-600 dark:text-gray-400">Recommend next steps and care coordination after each response</div>
                   </div>
                 </label>
-                <label className="flex items-start gap-2 cursor-pointer group p-2 rounded-md hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                <label className="flex items-start gap-2.5 cursor-pointer group p-2 rounded-md hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
                   <input
                     type="checkbox"
                     checked={settings.prioritizeRecent}
                     onChange={(e) => updateSetting('prioritizeRecent', e.target.checked)}
-                    className="mt-0.5 w-4 h-4 rounded border-gray-300 dark:border-gray-700 text-healthcare-500 focus:ring-healthcare-500"
+                    className="mt-[3px] w-3.5 h-3.5 rounded border-gray-300 dark:border-gray-700 text-healthcare-500 focus:ring-1 focus:ring-healthcare-500 focus:ring-offset-0"
                   />
                   <div className="flex-1">
                     <div className="text-sm font-medium text-gray-900 dark:text-white">Prioritize Recent Data</div>
