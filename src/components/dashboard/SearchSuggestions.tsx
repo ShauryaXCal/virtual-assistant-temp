@@ -58,8 +58,8 @@ const GENERAL_CATEGORIES: SuggestionCategory[] = [
 ];
 
 export function SearchSuggestions({ onSelectSuggestion, patientSpecific = false }: SearchSuggestionsProps) {
-  const [showFullView, setShowFullView] = useState(false);
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
+  const [showAllCategories, setShowAllCategories] = useState(false);
 
   const toggleCategory = (categoryId: string) => {
     setExpandedCategories(prev => {
@@ -73,95 +73,41 @@ export function SearchSuggestions({ onSelectSuggestion, patientSpecific = false 
     });
   };
 
-  const allSuggestions = GENERAL_CATEGORIES.flatMap(cat => cat.suggestions);
-
-  if (!showFullView) {
-    return (
-      <div className="w-full">
-        <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-3">Try asking:</p>
-        <div className="flex flex-wrap gap-2 mb-4">
-          {allSuggestions.slice(0, 8).map((suggestion, index) => (
-            <button
-              key={index}
-              onClick={() => onSelectSuggestion(suggestion)}
-              className="px-3 py-1.5 text-xs bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-full hover:bg-healthcare-50 hover:border-healthcare-500 dark:hover:bg-healthcare-900/20 dark:hover:border-healthcare-500 text-gray-700 dark:text-gray-300 transition-all duration-200 hover:shadow-sm max-w-xs truncate"
-              title={suggestion}
-            >
-              {suggestion.length > 60 ? suggestion.slice(0, 60) + '...' : suggestion}
-            </button>
-          ))}
-        </div>
-        <div className="flex justify-center">
-          <button
-            onClick={() => setShowFullView(true)}
-            className="flex items-center space-x-1 px-4 py-2 text-sm font-medium text-healthcare-500 hover:text-healthcare-600 hover:bg-healthcare-50 dark:hover:bg-healthcare-900/20 rounded-lg transition-colors"
-          >
-            <span>Explore More Capabilities</span>
-            <ChevronDown className="w-4 h-4" />
-          </button>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="w-full space-y-4">
-      <div className="flex items-center justify-between mb-3">
-        <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
-          Explore More Capabilities
-        </p>
-        <button
-          onClick={() => setShowFullView(false)}
-          className="flex items-center space-x-1 text-sm font-medium text-healthcare-500 hover:text-healthcare-600 transition-colors"
-        >
-          <span>Collapse</span>
-          <ChevronUp className="w-4 h-4" />
-        </button>
-      </div>
+    <div className="w-full space-y-3">
+      {GENERAL_CATEGORIES.map(category => {
+        const isCategoryExpanded = expandedCategories.has(category.id);
 
-      <div className="space-y-3">
-        {GENERAL_CATEGORIES.map(category => {
-          const isCategoryExpanded = expandedCategories.has(category.id);
-          const displaySuggestions = isCategoryExpanded
-            ? category.suggestions
-            : category.suggestions.slice(0, 1);
-
-          return (
-            <div
-              key={category.id}
-              className="border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 overflow-hidden transition-all duration-200"
+        return (
+          <div
+            key={category.id}
+            className="border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 overflow-hidden transition-all duration-200"
+          >
+            <button
+              onClick={() => toggleCategory(category.id)}
+              className="w-full px-4 py-3 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
             >
-              <button
-                onClick={() => toggleCategory(category.id)}
-                className="w-full px-4 py-3 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-              >
-                <div className="flex items-center space-x-2">
-                  <span className="text-lg">{category.icon}</span>
-                  <span className="text-sm font-semibold text-gray-900 dark:text-white">
-                    {category.title}
-                  </span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  {!isCategoryExpanded && (
-                    <span className="text-xs text-gray-500 dark:text-gray-400">
-                      {category.suggestions.length} suggestions
-                    </span>
-                  )}
-                  {isCategoryExpanded ? (
-                    <X className="w-4 h-4 text-gray-500" />
-                  ) : (
-                    <ChevronDown className="w-4 h-4 text-gray-500" />
-                  )}
-                </div>
-              </button>
+              <div className="flex items-center space-x-2">
+                <span className="text-lg">{category.icon}</span>
+                <span className="text-sm font-semibold text-gray-900 dark:text-white">
+                  {category.title}
+                </span>
+              </div>
+              {isCategoryExpanded ? (
+                <X className="w-4 h-4 text-gray-500" />
+              ) : (
+                <ChevronDown className="w-4 h-4 text-gray-500" />
+              )}
+            </button>
 
+            {isCategoryExpanded && (
               <div className="space-y-0 border-t border-gray-200 dark:border-gray-700">
-                {displaySuggestions.map((suggestion, index) => (
+                {category.suggestions.map((suggestion, index) => (
                   <button
                     key={index}
                     onClick={() => onSelectSuggestion(suggestion)}
                     className={`w-full px-4 py-3 text-left hover:bg-healthcare-50 dark:hover:bg-healthcare-900/20 transition-all duration-200 flex items-start justify-between group text-sm ${
-                      index < displaySuggestions.length - 1
+                      index < category.suggestions.length - 1
                         ? 'border-b border-gray-100 dark:border-gray-800'
                         : ''
                     }`}
@@ -173,9 +119,19 @@ export function SearchSuggestions({ onSelectSuggestion, patientSpecific = false 
                   </button>
                 ))}
               </div>
-            </div>
-          );
-        })}
+            )}
+          </div>
+        );
+      })}
+
+      <div className="flex justify-center mt-4">
+        <button
+          onClick={() => setShowAllCategories(!showAllCategories)}
+          className="flex items-center space-x-2 px-4 py-2 text-sm font-medium text-healthcare-500 hover:text-healthcare-600 hover:bg-healthcare-50 dark:hover:bg-healthcare-900/20 rounded-lg transition-colors"
+        >
+          <span>Explore More Capabilities</span>
+          <ChevronDown className="w-4 h-4" />
+        </button>
       </div>
     </div>
   );
