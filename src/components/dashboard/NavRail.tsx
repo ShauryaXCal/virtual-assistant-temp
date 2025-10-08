@@ -16,7 +16,7 @@ export function NavRail({ activeView, onChange }: NavRailProps) {
   ];
 
   return (
-    <div className="w-16 border-r border-gray-200/50 dark:border-gray-800/50 bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-900/95 flex flex-col items-center py-6 space-y-1">
+    <div className="w-16 border-r border-healthcare-200/30 dark:border-healthcare-800/30 bg-gradient-to-b from-healthcare-50 via-healthcare-50/80 to-healthcare-100/50 dark:from-healthcare-950 dark:via-healthcare-950/90 dark:to-healthcare-900/80 flex flex-col items-center py-6 space-y-1">
       {items.map((item) => {
         const Icon = item.icon;
         const isActive = activeView === item.id;
@@ -26,8 +26,8 @@ export function NavRail({ activeView, onChange }: NavRailProps) {
               onClick={() => onChange(item.id)}
               className={`w-12 h-12 rounded-xl flex items-center justify-center transition-all duration-200 ${
                 isActive
-                  ? 'bg-healthcare-500 text-white shadow-lg shadow-healthcare-500/30'
-                  : 'text-gray-500 dark:text-gray-400 hover:bg-gray-200/60 dark:hover:bg-gray-800/60 hover:text-gray-700 dark:hover:text-gray-300'
+                  ? 'bg-white dark:bg-healthcare-800 text-healthcare-600 dark:text-healthcare-300 shadow-lg shadow-healthcare-500/20 ring-2 ring-healthcare-500/20'
+                  : 'text-healthcare-600/60 dark:text-healthcare-400/70 hover:bg-white/60 dark:hover:bg-healthcare-900/60 hover:text-healthcare-600 dark:hover:text-healthcare-300'
               }`}
               aria-label={item.label}
             >
