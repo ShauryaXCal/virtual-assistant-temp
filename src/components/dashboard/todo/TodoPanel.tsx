@@ -15,27 +15,112 @@ export function TodoPanel({ selectedSection, isOpen, onToggle, width, onWidthCha
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [showDetails, setShowDetails] = useState(false);
 
-  // Sample data
-  const sampleTasks: Task[] = [
-    // Administrative tasks
-    { id: '1', title: 'Update patient records and sign charts', completed: false, priority: 'high', projectId: 'admin', dueDate: new Date().toISOString().split('T')[0], labels: ['urgent'], createdAt: new Date().toISOString(), notes: '', subtasks: [] },
-    { id: '2', title: 'Review lab and imaging results', completed: false, priority: 'normal', projectId: 'admin', dueDate: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split('T')[0], labels: ['review'], createdAt: new Date().toISOString(), notes: '', subtasks: [] },
-    { id: '3', title: 'Complete medical forms or insurance paperwork', completed: false, priority: 'normal', projectId: 'admin', labels: [], createdAt: new Date().toISOString(), notes: '', subtasks: [] },
-    
-    // Clinical tasks
-    { id: '4', title: 'Write or renew prescriptions', completed: false, priority: 'high', projectId: 'clinical', dueDate: new Date().toISOString().split('T')[0], labels: ['urgent'], createdAt: new Date().toISOString(), notes: '', subtasks: [] },
-    { id: '5', title: 'Order or follow up on diagnostic tests', completed: false, priority: 'normal', projectId: 'clinical', dueDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], labels: ['follow-up'], createdAt: new Date().toISOString(), notes: '', subtasks: [] },
-    { id: '6', title: 'Coordinate with nurses or specialists', completed: false, priority: 'normal', projectId: 'clinical', labels: [], createdAt: new Date().toISOString(), notes: '', subtasks: [] },
-    
-    // Professional tasks
-    { id: '7', title: 'Read new medical updates or guidelines', completed: false, priority: 'low', projectId: 'professional', dueDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], labels: ['review'], createdAt: new Date().toISOString(), notes: '', subtasks: [] },
-    { id: '8', title: 'Attend department or team meetings', completed: false, priority: 'normal', projectId: 'professional', dueDate: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split('T')[0], labels: [], createdAt: new Date().toISOString(), notes: '', subtasks: [] },
-    { id: '9', title: 'Work on research or teaching materials', completed: false, priority: 'low', projectId: 'professional', labels: [], createdAt: new Date().toISOString(), notes: '', subtasks: [] },
-    
-    // Personal/Management tasks
-    { id: '10', title: 'Check inventory or equipment needs', completed: false, priority: 'normal', projectId: 'personal', dueDate: new Date(Date.now() + 4 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], labels: [], createdAt: new Date().toISOString(), notes: '', subtasks: [] },
-    { id: '11', title: 'Plan next day\'s rounds or clinic schedule', completed: false, priority: 'high', projectId: 'personal', dueDate: new Date().toISOString().split('T')[0], labels: ['urgent'], createdAt: new Date().toISOString(), notes: '', subtasks: [] },
+  const getDateInDays = (days: number) => {
+    const date = new Date();
+    date.setDate(date.getDate() + days);
+    return date.toISOString().split('T')[0];
+  };
+
+  const initialTasks: Task[] = [
+    {
+      id: '1',
+      title: "Review John Michael Doe's latest renal function (eGFR 68) and repeat labs in 2 weeks to monitor for medication-related kidney impact after starting Metoprolol and Clopidogrel.",
+      completed: false,
+      priority: 'high',
+      patientName: 'John Michael Doe',
+      dueDate: getDateInDays(3),
+      labels: ['lab-follow-up'],
+      createdAt: new Date().toISOString(),
+      notes: '',
+      subtasks: []
+    },
+    {
+      id: '2',
+      title: "Confirm John Michael Doe's cardiology follow-up appointment scheduled for 2025-11-01 and ensure cardiac rehab referral is active.",
+      completed: false,
+      priority: 'normal',
+      patientName: 'John Michael Doe',
+      dueDate: getDateInDays(5),
+      labels: ['appointment'],
+      createdAt: new Date().toISOString(),
+      notes: '',
+      subtasks: []
+    },
+    {
+      id: '3',
+      title: "Review John Michael Doe's blood pressure and symptom diary for any new chest discomfort, fatigue, or weight gain suggestive of heart-failure progression.",
+      completed: false,
+      priority: 'normal',
+      patientName: 'John Michael Doe',
+      dueDate: getDateInDays(2),
+      labels: ['monitoring'],
+      createdAt: new Date().toISOString(),
+      notes: '',
+      subtasks: []
+    },
+    {
+      id: '4',
+      title: 'Order updated HbA1c, lipid panel, and urine microalbumin for Robert Johnson as part of annual diabetes monitoring (last labs >1 year ago).',
+      completed: false,
+      priority: 'high',
+      patientName: 'Robert Johnson',
+      dueDate: getDateInDays(1),
+      labels: ['lab-order'],
+      createdAt: new Date().toISOString(),
+      notes: '',
+      subtasks: []
+    },
+    {
+      id: '5',
+      title: 'Verify Robert Johnson has completed annual diabetic retinal and foot exams or schedule them within the next month.',
+      completed: false,
+      priority: 'normal',
+      patientName: 'Robert Johnson',
+      dueDate: getDateInDays(4),
+      labels: ['screening'],
+      createdAt: new Date().toISOString(),
+      notes: '',
+      subtasks: []
+    },
+    {
+      id: '6',
+      title: "Review Robert Johnson's home blood pressure readings and adjust antihypertensive regimen if average >130/80 mmHg.",
+      completed: false,
+      priority: 'normal',
+      patientName: 'Robert Johnson',
+      dueDate: getDateInDays(2),
+      labels: ['monitoring'],
+      createdAt: new Date().toISOString(),
+      notes: '',
+      subtasks: []
+    },
+    {
+      id: '7',
+      title: "Reassess Emily Chen's peak flow measurement after steroid taper (previous 380 L/min, goal ≥450) to evaluate asthma control.",
+      completed: false,
+      priority: 'high',
+      patientName: 'Emily Chen',
+      dueDate: getDateInDays(1),
+      labels: ['assessment'],
+      createdAt: new Date().toISOString(),
+      notes: '',
+      subtasks: []
+    },
+    {
+      id: '8',
+      title: "Evaluate Emily Chen's allergy management plan — consider adding montelukast or antihistamine for elevated IgE (250 IU/mL) and seasonal triggers.",
+      completed: false,
+      priority: 'normal',
+      patientName: 'Emily Chen',
+      dueDate: getDateInDays(3),
+      labels: ['medication'],
+      createdAt: new Date().toISOString(),
+      notes: '',
+      subtasks: []
+    },
   ];
+
+  const [tasks, setTasks] = useState<Task[]>(initialTasks);
 
   const projects: Project[] = [
     { id: 'admin', name: '🧾 Administrative', color: '#3B82F6', taskCount: 3, createdAt: new Date().toISOString() },
@@ -45,9 +130,13 @@ export function TodoPanel({ selectedSection, isOpen, onToggle, width, onWidthCha
   ];
 
   const labels: Label[] = [
-    { id: 'urgent', name: 'Urgent', color: '#EF4444', taskCount: 3 },
-    { id: 'review', name: 'Review', color: '#3B82F6', taskCount: 2 },
-    { id: 'follow-up', name: 'Follow-up', color: '#10B981', taskCount: 1 },
+    { id: 'lab-follow-up', name: 'Lab Follow-up', color: '#3B82F6', taskCount: 1 },
+    { id: 'appointment', name: 'Appointment', color: '#8B5CF6', taskCount: 1 },
+    { id: 'monitoring', name: 'Monitoring', color: '#10B981', taskCount: 2 },
+    { id: 'lab-order', name: 'Lab Order', color: '#EF4444', taskCount: 1 },
+    { id: 'screening', name: 'Screening', color: '#F59E0B', taskCount: 1 },
+    { id: 'assessment', name: 'Assessment', color: '#EC4899', taskCount: 1 },
+    { id: 'medication', name: 'Medication', color: '#06B6D4', taskCount: 1 },
   ];
 
   const handleTaskClick = (task: Task) => {
@@ -56,16 +145,16 @@ export function TodoPanel({ selectedSection, isOpen, onToggle, width, onWidthCha
   };
 
   const handleTaskUpdate = (updatedTask: Task) => {
-    // In a real app, this would update the task in the state
-    console.log('Task updated:', updatedTask);
+    setTasks(prevTasks =>
+      prevTasks.map(task => task.id === updatedTask.id ? updatedTask : task)
+    );
     if (selectedTask?.id === updatedTask.id) {
       setSelectedTask(updatedTask);
     }
   };
 
   const handleTaskDelete = (taskId: string) => {
-    // In a real app, this would remove the task from the state
-    console.log('Task deleted:', taskId);
+    setTasks(prevTasks => prevTasks.filter(task => task.id !== taskId));
     if (selectedTask?.id === taskId) {
       setSelectedTask(null);
       setShowDetails(false);
@@ -74,24 +163,14 @@ export function TodoPanel({ selectedSection, isOpen, onToggle, width, onWidthCha
 
   const getFilteredTasks = (): Task[] => {
     switch (selectedSection) {
-      case 'inbox':
-        return sampleTasks.filter(t => !t.projectId && !t.completed);
       case 'today':
-        return sampleTasks.filter(t => t.dueDate && isToday(t.dueDate) && !t.completed);
-      case 'upcoming':
-        return sampleTasks.filter(t => t.dueDate && isUpcoming(t.dueDate) && !t.completed);
-      case 'projects':
-        return sampleTasks.filter(t => t.projectId && !t.completed);
-      case 'project-admin':
-        return sampleTasks.filter(t => t.projectId === 'admin' && !t.completed);
-      case 'project-clinical':
-        return sampleTasks.filter(t => t.projectId === 'clinical' && !t.completed);
-      case 'project-professional':
-        return sampleTasks.filter(t => t.projectId === 'professional' && !t.completed);
-      case 'project-personal':
-        return sampleTasks.filter(t => t.projectId === 'personal' && !t.completed);
+        return tasks.filter(t => t.dueDate && isToday(t.dueDate));
+      case 'week':
+        return tasks.filter(t => t.dueDate && isThisWeek(t.dueDate));
+      case 'patients':
+        return tasks;
       default:
-        return sampleTasks;
+        return tasks;
     }
   };
 
@@ -100,33 +179,39 @@ export function TodoPanel({ selectedSection, isOpen, onToggle, width, onWidthCha
     return new Date(date).toDateString() === today;
   }
 
-  function isUpcoming(date: string): boolean {
+  function isThisWeek(date: string): boolean {
     const today = new Date();
+    today.setHours(0, 0, 0, 0);
     const taskDate = new Date(date);
-    return taskDate > today && taskDate <= new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
+    taskDate.setHours(0, 0, 0, 0);
+    const weekFromNow = new Date(today);
+    weekFromNow.setDate(weekFromNow.getDate() + 7);
+    return taskDate >= today && taskDate <= weekFromNow;
   }
 
   const getSectionTitle = () => {
     switch (selectedSection) {
-      case 'inbox':
-        return 'Inbox';
       case 'today':
-        return 'Today';
-      case 'upcoming':
-        return 'Upcoming';
-      case 'projects':
-        return 'All Projects';
-      case 'project-admin':
-        return '🧾 Administrative';
-      case 'project-clinical':
-        return '🔬 Clinical';
-      case 'project-professional':
-        return '📚 Professional';
-      case 'project-personal':
-        return '⚙️ Personal / Management';
+        return 'Due Today';
+      case 'week':
+        return 'Due This Week';
+      case 'patients':
+        return 'All Patients';
       default:
         return 'Tasks';
     }
+  };
+
+  const groupTasksByPatient = (tasks: Task[]) => {
+    const grouped: { [key: string]: Task[] } = {};
+    tasks.forEach(task => {
+      const patient = task.patientName || 'Other';
+      if (!grouped[patient]) {
+        grouped[patient] = [];
+      }
+      grouped[patient].push(task);
+    });
+    return grouped;
   };
 
   const filteredTasks = getFilteredTasks();
@@ -155,14 +240,35 @@ export function TodoPanel({ selectedSection, isOpen, onToggle, width, onWidthCha
                 No tasks found
               </h3>
               <p className="text-sm text-gray-500 dark:text-gray-400">
-                {selectedSection === 'inbox' 
-                  ? 'All caught up! Your inbox is empty.'
-                  : `No tasks in ${getSectionTitle().toLowerCase()}.`
-                }
+                All caught up! No tasks {getSectionTitle().toLowerCase()}.
               </p>
             </div>
+          ) : selectedSection === 'patients' ? (
+            <div className="space-y-6">
+              {Object.entries(groupTasksByPatient(filteredTasks)).map(([patientName, tasks]) => (
+                <div key={patientName}>
+                  <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 flex items-center gap-2">
+                    <span className="text-base">👤</span>
+                    {patientName}
+                    <span className="text-xs font-normal text-gray-500 dark:text-gray-400">({tasks.length})</span>
+                  </h3>
+                  <div className="space-y-2">
+                    {tasks.map(task => (
+                      <TaskItem
+                        key={task.id}
+                        task={task}
+                        onClick={() => handleTaskClick(task)}
+                        onUpdate={handleTaskUpdate}
+                        onDelete={handleTaskDelete}
+                        labels={labels}
+                      />
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-2">
               {filteredTasks.map(task => (
                 <TaskItem
                   key={task.id}

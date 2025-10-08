@@ -36,9 +36,8 @@ export function TaskItem({ task, onClick, onUpdate, onDelete, labels }: TaskItem
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    e.stopPropagation();
-    onUpdate({ ...task, completed: e.target.checked });
+  const handleCheckboxChange = () => {
+    onUpdate({ ...task, completed: !task.completed });
   };
 
   const handleTitleClick = (e: React.MouseEvent) => {

@@ -25,9 +25,9 @@ export function TodoLeftSidebar({ selectedSection, onSectionSelect, onAddTask }:
   ];
 
   const sections = [
-    { id: 'inbox', title: 'Inbox', icon: 'inbox', count: 11 },
-    { id: 'today', title: 'Today', icon: 'calendar', count: 5 },
-    { id: 'upcoming', title: 'Upcoming', icon: 'clock', count: 6 },
+    { id: 'today', title: 'Due Today', icon: 'calendar', count: 0 },
+    { id: 'week', title: 'Due This Week', icon: 'clock', count: 8 },
+    { id: 'patients', title: 'Patients', icon: 'user', count: 3 },
   ];
 
   return (
@@ -86,73 +86,6 @@ export function TodoLeftSidebar({ selectedSection, onSectionSelect, onAddTask }:
           </div>
         ))}
 
-        {/* Projects */}
-        <div className="border-b border-gray-100 dark:border-gray-800">
-          <button
-            onClick={() => onSectionSelect('projects')}
-            className={`w-full px-3 py-2 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors group ${
-              selectedSection === 'projects' ? 'bg-healthcare-50 dark:bg-healthcare-900/20 border-r-2 border-healthcare-500' : ''
-            }`}
-          >
-            <div className="flex items-center space-x-2 flex-1 min-w-0">
-              <span className="text-sm">📁</span>
-              <span className="text-sm font-medium text-gray-900 dark:text-white truncate">
-                Projects
-              </span>
-              <span className="px-1.5 py-0.5 bg-gray-200 dark:bg-gray-700 text-xs text-gray-600 dark:text-gray-400 rounded-full">
-                {projects.length}
-              </span>
-            </div>
-          </button>
-        </div>
-
-        {/* Project List */}
-        {selectedSection === 'projects' && (
-          <div className="px-2 pb-2">
-            <div className="space-y-1">
-              {projects.map(project => (
-                <button
-                  key={project.id}
-                  onClick={() => onSectionSelect(`project-${project.id}`)}
-                  className="w-full px-3 py-2 flex items-center space-x-2 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors rounded-lg group"
-                >
-                  <div
-                    className="w-3 h-3 rounded-full flex-shrink-0"
-                    style={{ backgroundColor: project.color }}
-                  />
-                  <span className="text-sm text-gray-900 dark:text-white truncate flex-1 text-left">
-                    {project.name}
-                  </span>
-                  {project.taskCount > 0 && (
-                    <span className="px-1.5 py-0.5 bg-gray-200 dark:bg-gray-700 text-xs text-gray-600 dark:text-gray-400 rounded-full">
-                      {project.taskCount}
-                    </span>
-                  )}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Labels */}
-        <div>
-          <button
-            onClick={() => onSectionSelect('labels')}
-            className={`w-full px-3 py-2 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors group ${
-              selectedSection === 'labels' ? 'bg-healthcare-50 dark:bg-healthcare-900/20 border-r-2 border-healthcare-500' : ''
-            }`}
-          >
-            <div className="flex items-center space-x-2 flex-1 min-w-0">
-              <span className="text-sm">🏷️</span>
-              <span className="text-sm font-medium text-gray-900 dark:text-white truncate">
-                Labels
-              </span>
-              <span className="px-1.5 py-0.5 bg-gray-200 dark:bg-gray-700 text-xs text-gray-600 dark:text-gray-400 rounded-full">
-                {labels.length}
-              </span>
-            </div>
-          </button>
-        </div>
       </div>
     </div>
   );
@@ -160,12 +93,12 @@ export function TodoLeftSidebar({ selectedSection, onSectionSelect, onAddTask }:
 
 function getIcon(iconName: string) {
   switch (iconName) {
-    case 'inbox':
-      return '📥';
     case 'calendar':
       return '📅';
     case 'clock':
-      return '⏰';
+      return '📆';
+    case 'user':
+      return '👥';
     case 'folder':
       return '📁';
     case 'tag':

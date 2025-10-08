@@ -11,6 +11,7 @@ export interface Task {
   subtasks: Subtask[];
   timeEstimate?: string;
   pinned?: boolean;
+  patientName?: string;
 }
 
 export interface Subtask {
