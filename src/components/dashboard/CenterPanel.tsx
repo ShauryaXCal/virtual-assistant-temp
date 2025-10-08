@@ -637,14 +637,20 @@ Always individualize care based on patient-specific factors, comorbidities, and 
                 </div>
               </div>
             ) : (
-              <div className="space-y-4">
+              <div className="space-y-6">
                 {conversation.map((turn) => (
-                  <div key={turn.id} className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700">
-                    <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-800">
-                      <p className="text-sm text-gray-900 dark:text-white font-medium">{turn.query}</p>
+                  <div key={turn.id} className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
+                    <div className="px-5 py-3.5 bg-gray-50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-700">
+                      <p className="text-sm text-gray-900 dark:text-white font-medium leading-relaxed">{turn.query}</p>
                     </div>
-                    <div className="p-4">
-                      <div className="prose prose-sm dark:prose-invert max-w-none prose-headings:text-sm prose-headings:font-semibold prose-headings:mt-3 prose-headings:mb-2 prose-p:my-2 prose-p:text-sm prose-p:leading-relaxed prose-ul:my-2 prose-li:my-0.5 prose-li:text-sm prose-strong:font-semibold">
+                    <div className="px-5 py-4">
+                      <div className="prose prose-sm dark:prose-invert max-w-none
+                        prose-headings:text-base prose-headings:font-semibold prose-headings:mt-4 prose-headings:mb-2.5 prose-headings:text-gray-900 prose-headings:dark:text-white
+                        prose-p:my-2.5 prose-p:text-sm prose-p:leading-relaxed prose-p:text-gray-700 prose-p:dark:text-gray-300
+                        prose-ul:my-2.5 prose-ul:space-y-1.5
+                        prose-li:my-0 prose-li:text-sm prose-li:leading-relaxed prose-li:text-gray-700 prose-li:dark:text-gray-300
+                        prose-strong:font-semibold prose-strong:text-gray-900 prose-strong:dark:text-white
+                        prose-code:text-xs prose-code:bg-gray-100 prose-code:dark:bg-gray-800 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded">
                         <Markdown>{turn.answer}</Markdown>
                       </div>
                     </div>
@@ -655,9 +661,9 @@ Always individualize care based on patient-specific factors, comorbidities, and 
                   <div className="text-red-600 dark:text-red-400 text-sm">{error}</div>
                 )}
 
-                <div className="px-3 py-2 bg-healthcare-50 dark:bg-healthcare-900/10 rounded border border-healthcare-200 dark:border-healthcare-800">
-                  <p className="text-xs text-healthcare-700 dark:text-healthcare-400">
-                    <strong>Note:</strong> This information is based on current clinical guidelines. Always verify with latest evidence-based sources.
+                <div className="px-4 py-3 bg-healthcare-50 dark:bg-healthcare-900/10 rounded-lg border border-healthcare-200 dark:border-healthcare-800">
+                  <p className="text-xs text-healthcare-700 dark:text-healthcare-400 leading-relaxed">
+                    <strong>Note:</strong> This information is based on current clinical guidelines. Always verify with latest evidence-based sources and consider individual patient factors.
                   </p>
                 </div>
               </div>
