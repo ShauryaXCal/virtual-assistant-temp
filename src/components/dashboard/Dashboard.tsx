@@ -34,6 +34,15 @@ export function Dashboard() {
     }
   };
 
+  const handleSelectPatient = (patientId: string) => {
+    setSelectedPatientId(patientId);
+    setSelectedAppointment(null);
+    if (window.innerWidth < 1024) {
+      setShowRightPanel(true);
+      setShowLeftPanel(false);
+    }
+  };
+
 
   return (
     <div className="h-screen flex flex-col bg-gray-50 dark:bg-gray-950 transition-colors duration-300">
@@ -48,7 +57,7 @@ export function Dashboard() {
             {view === 'calendar' && (
               <LeftPanel onSelectAppointment={handleSelectAppointment} />
             )}
-            {view === 'patient' && <PatientLeftPanel />}
+            {view === 'patient' && <PatientLeftPanel onSelectPatient={handleSelectPatient} />}
             {view === 'instructions' && <InstructionsLeftPanel />}
             {view === 'todo' && (
               <div className="flex flex-col h-full">
