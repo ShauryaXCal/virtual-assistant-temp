@@ -14,7 +14,6 @@ import {
   getLabReportsByPatientId,
 } from '../../lib/database';
 
-import { useAuth } from '../../contexts/AuthContext';
 import { callAgent } from '../../lib/agentClient';
 
 import type { Patient, MedicalEncounter, Condition, Medication, LabReport } from '../../lib/supabase';
@@ -103,9 +102,6 @@ interface CenterPanelProps {
 }
 
 export function CenterPanel({patientId, rightPanelOpen}:CenterPanelProps) {
-
-  const { user } = useAuth();
-
   const [searchHistory, setSearchHistory] = useState<SearchResult[]>([]);
   const [currentQuery, setCurrentQuery] = useState('');
   const [currentAnswer, setCurrentAnswer] = useState('');

@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Calendar, User, AlertCircle, UserPlus, Share2, Plus } from 'lucide-react';
 import { getAppointmentsByDoctorId, getPatientById } from '../../lib/database';
-import { useAuth } from '../../contexts/AuthContext';
 import type { Appointment as DbAppointment, Patient } from '../../lib/supabase';
 
 interface Appointment {
@@ -37,17 +36,20 @@ function timeToMinutes(timeStr: string): number {
 }
 
 export function LeftPanel({ onSelectAppointment }: LeftPanelProps) {
-  const { user } = useAuth();
   const [selectedDate, setSelectedDate] = useState('2025-10-03');
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     async function loadAppointments() {
-      if (!user) return;
+      const storedMember = localStorage.getItem('selectedMember');
+      if (!storedMember) return;
+
+      const member = JSON.parse(storedMember);
+      const doctorId = 'befec32a-c29a-4b31-a55c-cf23abe50b8d';
 
       setIsLoading(true);
-      const dbAppointments = await getAppointmentsByDoctorId(user.id, selectedDate);
+      const dbAppointments = await getAppointmentsByDoctorId(doctorId, selectedDate);
 
       const appointmentsWithDetails = await Promise.all(
         dbAppointments.map(async (apt) => {
@@ -70,7 +72,7 @@ export function LeftPanel({ onSelectAppointment }: LeftPanelProps) {
     }
 
     loadAppointments();
-  }, [user, selectedDate]);
+  }, [selectedDate]);
 
   const workdayStart = 8;
   const workdayEnd = 18;

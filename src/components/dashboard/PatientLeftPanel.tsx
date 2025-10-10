@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { Search, User } from 'lucide-react';
-import { useAuth } from '../../contexts/AuthContext';
 import { getPatientsByDoctorId } from '../../lib/database';
 import type { Patient } from '../../lib/supabase';
 
@@ -9,7 +8,6 @@ interface PatientLeftPanelProps {
 }
 
 export function PatientLeftPanel({ onSelectPatient }: PatientLeftPanelProps) {
-  const { user } = useAuth();
   const [patients, setPatients] = useState<Patient[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -17,19 +15,16 @@ export function PatientLeftPanel({ onSelectPatient }: PatientLeftPanelProps) {
 
   useEffect(() => {
     async function loadPatients() {
-      if (!user?.id) {
-        setIsLoading(false);
-        return;
-      }
+      const currentDoctorId = 'befec32a-c29a-4b31-a55c-cf23abe50b8d';
 
       setIsLoading(true);
-      const patientData = await getPatientsByDoctorId(user.id);
+      const patientData = await getPatientsByDoctorId(currentDoctorId);
       setPatients(patientData);
       setIsLoading(false);
     }
 
     loadPatients();
-  }, [user?.id]);
+  }, []);
 
   const filteredPatients = patients.filter(patient =>
     patient.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
