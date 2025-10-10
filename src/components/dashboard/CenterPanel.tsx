@@ -124,11 +124,13 @@ export function CenterPanel({patientId, rightPanelOpen}:CenterPanelProps) {
   const [currentPatientName, setCurrentPatientName] = useState<string | null>(null);
 
   const systemMessage = useMemo(() => {
-    const doctorName = user?.fullName || 'Unknown Doctor';
-    const specialty = user?.specialty || 'General Medicine';
+    const storedMember = localStorage.getItem('selectedMember');
+    const member = storedMember ? JSON.parse(storedMember) : null;
+    const doctorName = member?.full_name || 'Dr. Sarah Mitchell';
+    const specialty = member?.specialty || 'Internal Medicine';
     const patientContext = rightPanelOpen && currentPatientName ? ` The current patient is ${currentPatientName}.` : '';
-    return `You are a clinical assistant. The current user is Dr. ${doctorName} (Specialty: ${specialty}).${patientContext} Provide  evidence-informed answers with clear formatting.`;
-  }, [user, rightPanelOpen, currentPatientName]);
+    return `You are a clinical assistant. The current user is ${doctorName} (Specialty: ${specialty}).${patientContext} Provide  evidence-informed answers with clear formatting.`;
+  }, [rightPanelOpen, currentPatientName]);
   
   useEffect(() => {
     async function loadPatientData() {
