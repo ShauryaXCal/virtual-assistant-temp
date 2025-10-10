@@ -11,6 +11,7 @@ import {
   createFullReferralWorkflowForCardiologist,
   createCardiologyFollowupWorkflow,
 } from '../../lib/database';
+import { useAuth } from '../../contexts/AuthContext';
 import type { Patient, MedicalEncounter, Condition, Medication, LabReport, Doctor } from '../../lib/supabase';
 
 interface RightPanelProps {
@@ -28,6 +29,7 @@ interface Specialist {
 }
 
 export function RightPanel({ patientId, appointment }: RightPanelProps) {
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<Tab>('encounters');
   const [showReferralMenu, setShowReferralMenu] = useState(false);
   const [showReferralSuccess, setShowReferralSuccess] = useState(false);
@@ -45,9 +47,8 @@ export function RightPanel({ patientId, appointment }: RightPanelProps) {
   useEffect(() => {
     async function loadSpecialists() {
       const doctors = await getAllDoctors();
-      const currentDoctorId = 'befec32a-c29a-4b31-a55c-cf23abe50b8d';
       const specialistList = doctors
-        .filter(d => d.id !== currentDoctorId)
+        .filter(d => d.id !== user?.id)
         .map(d => ({
           id: d.id,
           name: d.full_name,
@@ -57,7 +58,7 @@ export function RightPanel({ patientId, appointment }: RightPanelProps) {
       setSpecialists(specialistList);
     }
     loadSpecialists();
-  }, []);
+  }, [user]);
 
   useEffect(() => {
     async function loadPatientData() {
@@ -98,16 +99,15 @@ export function RightPanel({ patientId, appointment }: RightPanelProps) {
   }, []);
 
   const handleReferral = async (specialist: Specialist) => {
-    if (!patientId) return;
+    if (!patientId || !user) return;
 
-    const currentDoctorId = 'befec32a-c29a-4b31-a55c-cf23abe50b8d';
     const referralReason = appointment?.reason || 'General referral';
 
-    if (currentDoctorId == "befec32a-c29a-4b31-a55c-cf23abe50b8d") {
-      await createFullReferralWorkflowForCardiologist(patientId, currentDoctorId, specialist.id, referralReason);
+    if (user.id == "befec32a-c29a-4b31-a55c-cf23abe50b8d") {
+      await createFullReferralWorkflowForCardiologist(patientId, user.id, specialist.id, referralReason);
     }
     else {
-      await createCardiologyFollowupWorkflow(patientId, currentDoctorId, specialist.id);
+      await createCardiologyFollowupWorkflow(patientId, user.id, specialist.id);
     }
     setShowReferralMenu(false);
     setShowReferralSuccess(true);
@@ -168,8 +168,8 @@ export function RightPanel({ patientId, appointment }: RightPanelProps) {
   ];
 
   const generatePatientSummary = () => {
-    const currentDoctorId = 'befec32a-c29a-4b31-a55c-cf23abe50b8d';
-    const myEncounters = encounters.filter(e => e.doctor_id === currentDoctorId);
+    // Filter encounters by this doctor only
+    const myEncounters = encounters.filter(e => e.doctor_id === user?.id);
     const lastMyEncounter = myEncounters[0];
     const isNewPatient = myEncounters.length === 0;
 
@@ -219,7 +219,7 @@ export function RightPanel({ patientId, appointment }: RightPanelProps) {
 
       // Check for new encounters with other providers
       const encountersSinceLastVisit = encounters.filter(e =>
-        e.doctor_id !== currentDoctorId && new Date(e.encounter_date) > lastVisitDate
+        e.doctor_id !== user?.id && new Date(e.encounter_date) > lastVisitDate
       );
 
       // Check for new labs since last visit

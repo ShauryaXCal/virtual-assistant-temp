@@ -14,6 +14,7 @@ import {
   getLabReportsByPatientId,
 } from '../../lib/database';
 
+import { useAuth } from '../../contexts/AuthContext';
 import { callAgent } from '../../lib/agentClient';
 
 import type { Patient, MedicalEncounter, Condition, Medication, LabReport } from '../../lib/supabase';
@@ -102,6 +103,9 @@ interface CenterPanelProps {
 }
 
 export function CenterPanel({patientId, rightPanelOpen}:CenterPanelProps) {
+
+  const { user } = useAuth();
+
   const [searchHistory, setSearchHistory] = useState<SearchResult[]>([]);
   const [currentQuery, setCurrentQuery] = useState('');
   const [currentAnswer, setCurrentAnswer] = useState('');
@@ -124,13 +128,11 @@ export function CenterPanel({patientId, rightPanelOpen}:CenterPanelProps) {
   const [currentPatientName, setCurrentPatientName] = useState<string | null>(null);
 
   const systemMessage = useMemo(() => {
-    const storedMember = localStorage.getItem('selectedMember');
-    const member = storedMember ? JSON.parse(storedMember) : null;
-    const doctorName = member?.full_name || 'Dr. Sarah Mitchell';
-    const specialty = member?.specialty || 'Internal Medicine';
+    const doctorName = user?.fullName || 'Unknown Doctor';
+    const specialty = user?.specialty || 'General Medicine';
     const patientContext = rightPanelOpen && currentPatientName ? ` The current patient is ${currentPatientName}.` : '';
-    return `You are a clinical assistant. The current user is ${doctorName} (Specialty: ${specialty}).${patientContext} Provide  evidence-informed answers with clear formatting.`;
-  }, [rightPanelOpen, currentPatientName]);
+    return `You are a clinical assistant. The current user is Dr. ${doctorName} (Specialty: ${specialty}).${patientContext} Provide  evidence-informed answers with clear formatting.`;
+  }, [user, rightPanelOpen, currentPatientName]);
   
   useEffect(() => {
     async function loadPatientData() {

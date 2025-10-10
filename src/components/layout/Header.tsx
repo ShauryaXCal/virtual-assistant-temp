@@ -1,28 +1,14 @@
 import { Moon, Sun, User, ChevronDown } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
+import { useAuth } from '../../contexts/AuthContext';
 import { useState, useRef, useEffect } from 'react';
 import { PreferencesMenu } from './PreferencesMenu';
 
-interface OrganizationMember {
-  id: string;
-  full_name: string;
-  role: string;
-  specialty: string;
-  location: string;
-}
-
 export function Header() {
   const { theme, toggleTheme } = useTheme();
+  const { user } = useAuth();
   const [showMenu, setShowMenu] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
-  const [member, setMember] = useState<OrganizationMember | null>(null);
-
-  useEffect(() => {
-    const storedMember = localStorage.getItem('selectedMember');
-    if (storedMember) {
-      setMember(JSON.parse(storedMember));
-    }
-  }, []);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -69,8 +55,8 @@ export function Header() {
               <User className="w-5 h-5 text-white" />
             </div>
             <div className="text-left hidden sm:block">
-              <p className="text-sm font-medium text-gray-900 dark:text-white">{member?.full_name || 'User'}</p>
-              <p className="text-xs text-gray-500 dark:text-gray-400">{member?.role || 'Healthcare Professional'}</p>
+              <p className="text-sm font-medium text-gray-900 dark:text-white">{user?.fullName}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">{user?.specialty}</p>
             </div>
             <ChevronDown className="w-4 h-4 text-gray-500 dark:text-gray-400" />
           </button>
